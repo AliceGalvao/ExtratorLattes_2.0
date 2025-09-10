@@ -12,7 +12,7 @@ from Read_Data.Armazenar_dados_lattes import StorageLattes
 from Read_Data.Leitor import Leitor
 
 logger = logging.getLogger('dash_app')
-dash.register_page(__name__, path='/filters', name='Filtros')
+dash.register_page(__name__, path='/filtros', name='Filtros')
 
 layout = html.Div([
 
@@ -267,8 +267,8 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_corte,
 )
 def redirecionar_apos_processamento(store_data):
     if store_data:
-        logger.info("Redirecionando automaticamente para /visualizations após processamento.")
-        return "/visualizations"
+        logger.info("Redirecionando automaticamente para /visualizacoes após processamento.")
+        return "/visualizacoes"
     raise PreventUpdate
 
 @callback(
