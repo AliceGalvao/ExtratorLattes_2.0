@@ -9,7 +9,7 @@ Cython==3.1.3
 dash==3.2.0
 dash_bootstrap_components==2.0.4
 dl==0.1.0
-docutils==0.22
+docutils==0.21
 filelock==3.19.1
 gssapi==1.10.0
 html5lib==1.1
@@ -18,7 +18,6 @@ importlib_resources==6.5.2
 ini2toml==0.15
 ipython==8.12.3
 ipywidgets==8.1.7
-jnius==1.1.0
 keyring==25.6.0
 lxml==6.0.0
 mod==0.3.0
@@ -39,6 +38,14 @@ Sphinx==8.2.3
 thread==2.0.5
 trove_classifiers==2025.9.9.12
 urllib3_secure_extra==0.1.0
-xmlrpclib==1.0.1
 xx==3.3.2
 zeep==4.3.1
+
+'''
+Deixei essas duas dependências como comentário 
+pois estavam dando problema na instalação das 
+dependências.
+
+#jnius==1.1.0
+#xmlrpclib==1.0.1
+'''
