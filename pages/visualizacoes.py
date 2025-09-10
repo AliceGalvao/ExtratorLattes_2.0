@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 from dash.exceptions import PreventUpdate
 
-dash.register_page(__name__, path='/visualizations', name="Visualizações")
+dash.register_page(__name__, path='/visualizacoes', name="Visualizações")
 
 layout = html.Div([
 

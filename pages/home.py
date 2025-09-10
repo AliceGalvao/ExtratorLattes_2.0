@@ -205,7 +205,7 @@ def handle_upload(contents, filename):
 
         status_message = f'Arquivo "{filename}" carregado com sucesso! ({total_researchers} pesquisadores em {len(excel_data)} abas).'
 
-        return dcc.Location(pathname="/filters", id="redirect-after-upload", refresh=True), status_message, data_to_store, False, ""
+        return dcc.Location(pathname="/filtros", id="redirect-after-upload", refresh=True), status_message, data_to_store, False, ""
 
     except Exception as e:
         error_msg = f"Erro ao carregar arquivo: {e}"
