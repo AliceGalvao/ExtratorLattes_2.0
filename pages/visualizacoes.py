@@ -497,8 +497,9 @@ def mostrar_filtros_eventos(selected_viz, btn_geral, btn_grupo, btn_professor, s
                 options=[{"label": g, "value": g} for g in grupos_disponiveis],
                 value=grupos_disponiveis[0] if grupos_disponiveis else None,
                 clearable=False,
+                style={"width": "100%"}
             )
-        ], style={"display": "inline-block", "marginRight": "10px", "width": "200px"}),
+        ], style={"display": "flex","flexDirection": "column","alignItems":"center", "marginRight": "10px", "marginLeft": "20px", "width": "350px"}),
     ])
 
 @callback(
