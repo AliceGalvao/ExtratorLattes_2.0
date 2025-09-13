@@ -107,13 +107,13 @@ layout = html.Div([
         html.H3("Eventos e Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div(id="filtros-eventos-container",
                  children =[
-                     html.Div(id="wrapper-filtro-eventos",
-                              style = {'display': 'none'},
-                              children=[
-                                  html.Div([
-                                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
-                                    dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Selecione o grupo")
-                                  ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
+                    html.Div(id="wrapper-filtro-eventos",
+                            style = {'display': 'none'},
+                            children=[
+                                html.Div([
+                                html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
+                                dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Selecione o grupo")
+                                ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
                               ])
                      ]),
         html.Div(id="container-graficos-eventos", style={
