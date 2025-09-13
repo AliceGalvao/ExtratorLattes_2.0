@@ -105,7 +105,13 @@ layout = html.Div([
 
     html.Div(id="section-eventos", children=[
         html.H3("Eventos e Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-eventos-container"),
+        html.Div(id="filtros-eventos-container",
+                 children =[
+                     html.Div(id="wrapper-filtro-eventos",style = {'display': 'none'},
+                              children=[
+                                  dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Filtrar por grupo...")
+                              ])
+                     ]),
         html.Div(id="container-graficos-eventos", style={
             'display': 'flex',
             'flexDirection': 'row',
@@ -417,16 +423,19 @@ def atualizar_graficos_registros(selected_viz, btn_geral, btn_grupo, btn_profess
     Input("btn-geral", "n_clicks"),
     Input("btn-grupo", "n_clicks"),
     Input("btn-professor", "n_clicks"),
+    Input("filtro-grupo-eventos", "value"),
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_eventos(selected_viz, btn_geral, btn_grupo, btn_professor, stored_data):
+def atualizar_graficos_eventos(selected_viz, btn_geral, btn_grupo, btn_professor, grupo_selecionado, stored_data):
     if not stored_data or "eventos_publicacoes" not in selected_viz:
         return []
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    
     ctx = callback_context
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'btn-geral'
     modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
-    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo)
+    
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
     return gerar_graficos_eventos_publicacoes(dfs_filtrados, modo)
 
 @callback(
@@ -466,41 +475,33 @@ def mostrar_filtros_orientacoes(selected_viz):
     ], style={"display":"flex", "gap":"20px"})
 
 @callback(
-    Output("filtros-eventos-container", "children"),
-    Input("checklist-viz", "value"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks"),
+    Output("wrapper-filtro-eventos", "style"),
     Input("btn-professor", "n_clicks"),
-    State("store-lista-dfs", "data")
+    Input("btn-geral", "n_clicks"),
+    Input("btn-grupo", "n_clicks")
 )
-def mostrar_filtros_eventos(selected_viz, btn_geral, btn_grupo, btn_professor, stored_data):
-    if "eventos_publicacoes" not in selected_viz:
-        return html.Div()
-
+def mostrar_ocultar_filtro_eventos(btn_professor, btn_geral, btn_grupo):
+    '''função que controla a exibiçao do filtro de grupos na seção de Eventos e Publicações'''
     ctx = callback_context
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'btn-geral'
-    modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
+    if not ctx.triggered:
+        return {'display': 'none'}
 
-    if modo != 'professor':
-        return html.Div()
+    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    if btn_id == 'btn-professor':
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
 
-    grupos_disponiveis = []
-    if stored_data:
-        dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
-        grupos_disponiveis = [k for k in dfs.keys() if k != "total"]
-
-    return html.Div([
-        html.Div([
-            html.Label("Selecione o grupo:"),
-            dcc.Dropdown(
-                id="filtro-grupo-eventos",
-                options=[{"label": g, "value": g} for g in grupos_disponiveis],
-                value=grupos_disponiveis[0] if grupos_disponiveis else None,
-                clearable=False,
-                style={"width": "100%"}
-            )
-        ], style={"display": "flex","flexDirection": "column","alignItems":"center", "marginRight": "10px", "marginLeft": "20px", "width": "350px"}),
-    ])
+@callback(
+    Output("filtro-grupo-eventos", "options"),
+    Input("store-lista-dfs", "data")
+)
+def popular_opcoes_de_grupo(stored_data):
+    if not stored_data: return []
+    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
+    return grupos
 
 @callback(
     Output('btn-geral', 'style'),
