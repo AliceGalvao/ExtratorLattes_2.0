@@ -190,12 +190,13 @@ layout = html.Div([
             'justifyContent': 'center'
         }),
 
-        dcc.Loading(id='loading-output', type='default', children=html.Div(id='output-message')),
+        dcc.Loading(id='loading-output', type='default', children=html.Div(id='output-message'), fullscreen=True, style={'backgroundColor': 'rgba(0, 0, 0, 0.5)'}),
     ]),
     dcc.Location(id='redirect-div-after-process', refresh=True)
 ])
 
 @callback(
+    Output('output-message', 'children', allow_duplicate=True),
     Output('store-lista-dfs', 'data'),
     Output('error-modal', 'is_open', allow_duplicate=True),
     Output('modal-error-message', 'children', allow_duplicate=True),
@@ -215,10 +216,10 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio,
     logger.info("[.] Processando resultados com base nas seleções da página de filtros")
 
     if not uploaded_file_data_dict:
-        return no_update, True, "Por favor, carregue um arquivo na tela inicial."
+        return "", no_update, True, "Por favor, carregue um arquivo na tela inicial."
 
     if not ano_inicio:
-        return no_update, no_update, True, "Por favor, selecione um ano de inicio."
+        return "", no_update, no_update, True, "Por favor, selecione um ano de inicio."
 
     try:
         tipo_extracao = uploaded_file_data_dict.get('tipo', 'programas')
@@ -297,7 +298,7 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio,
             logger.error(f"Erro convertendo dados para JSON: {e}")
 
 
-        return lista_dfs, False, ""
+        return "", lista_dfs, False, ""
 
     except Exception as e:
         logger.error(f"[X] Erro ao gerar resultados: {str(e)}\n{traceback.format_exc()}")
