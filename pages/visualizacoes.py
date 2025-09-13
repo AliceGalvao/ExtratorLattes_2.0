@@ -107,9 +107,13 @@ layout = html.Div([
         html.H3("Eventos e Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div(id="filtros-eventos-container",
                  children =[
-                     html.Div(id="wrapper-filtro-eventos",style = {'display': 'none'},
+                     html.Div(id="wrapper-filtro-eventos",
+                              style = {'display': 'none'},
                               children=[
-                                  dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Filtrar por grupo...")
+                                  html.Div([
+                                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
+                                    dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Selecione o grupo")
+                                  ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
                               ])
                      ]),
         html.Div(id="container-graficos-eventos", style={
@@ -481,7 +485,9 @@ def mostrar_filtros_orientacoes(selected_viz):
     Input("btn-grupo", "n_clicks")
 )
 def mostrar_ocultar_filtro_eventos(btn_professor, btn_geral, btn_grupo):
-    '''função que controla a exibiçao do filtro de grupos na seção de Eventos e Publicações'''
+    #Função que controla a exibiçao do filtro de grupos na seção de Eventos e Publicações
+    #Quando iniciamos a página, tem um dropdown invisivel e essa função exibe ele se o botão professor foi apertado
+    
     ctx = callback_context
     if not ctx.triggered:
         return {'display': 'none'}
