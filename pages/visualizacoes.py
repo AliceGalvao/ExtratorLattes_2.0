@@ -387,17 +387,18 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
     Input("filtro-status-orientacoes", "value"),
     Input("filtro-tipo-orientacoes", "value"),
     Input("filtro-natureza-orientacoes", "value"),
+    Input("filtro-grupo-orientacoes", "value"),
     State("store-lista-dfs", "data")
 )
 def atualizar_graficos_orientacoes(selected_viz, btn_geral, btn_grupo, btn_professor,
-                                   status, tipo, natureza, stored_data):
+                                   status, tipo, natureza, grupo_selecionado, stored_data):
     if not stored_data or "orientacoes" not in selected_viz:
         return []
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     ctx = callback_context
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'btn-geral'
     modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
-    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo)
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
     return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo) # Passando 'modo'
 
 @callback(
@@ -450,7 +451,7 @@ def mostrar_filtros_orientacoes(selected_viz):
     if "orientacoes" not in selected_viz:
         return html.Div()
 
-    return html.Div([
+    filtros_padrao = html.Div([
         html.Div([html.Label("Status:"), dcc.Dropdown(
             id="filtro-status-orientacoes",
             options=[{"label": "Em andamento", "value": "andamento"},
@@ -478,14 +479,57 @@ def mostrar_filtros_orientacoes(selected_viz):
         )], style={"display":"inline-block", 'width':'150px'}),
     ], style={"display":"flex", "gap":"20px"})
 
+    #Solução (temporária) para podermos renderizar esse elemento ao mudar a visualização para Professor
+    filtro_condicional = html.Div(
+        id='wrapper-filtro-orientacoes',
+        style={'display': 'none'},
+        children=[
+             html.Div([
+                html.Label("Filtrar por Grupo:"),
+                dcc.Dropdown(
+                    id="filtro-grupo-orientacoes",
+                    options=[],
+                    clearable=True,
+                    placeholder="Todos os grupos"
+                )
+            ], style={'width': '300px', 'marginLeft': '20px'})
+        ]
+    )
+    
+    return html.Div([
+        filtros_padrao,
+        filtro_condicional
+    ], style={'display': 'flex', 'alignItems': 'center'})
+    
 @callback(
     Output("wrapper-filtro-eventos", "style"),
     Input("btn-professor", "n_clicks"),
     Input("btn-geral", "n_clicks"),
     Input("btn-grupo", "n_clicks")
 )
-def mostrar_ocultar_filtro_eventos(btn_professor, btn_geral, btn_grupo):
-    #Função que controla a exibiçao do filtro de grupos na seção de Eventos e Publicações
+def mostrar_ocultar_filtro_grupo_eventos(btn_professor, btn_geral, btn_grupo):
+    #Função que controla a exibiçao do filtro de grupos na seção de Eventos e Publicações e Orientações
+    #Quando iniciamos a página, tem um dropdown invisivel e essa função exibe ele se o botão professor foi apertado
+    
+    ctx = callback_context
+    if not ctx.triggered:
+        return {'display': 'none'}
+
+    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    if btn_id == 'btn-professor':
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
+
+@callback(
+    Output("wrapper-filtro-orientacoes", "style"),
+    Input("btn-professor", "n_clicks"),
+    Input("btn-geral", "n_clicks"),
+    Input("btn-grupo", "n_clicks")
+)
+def mostrar_ocultar_filtro_grupo_orientacoes(btn_professor, btn_geral, btn_grupo):
+    #Função que controla a exibiçao do filtro de grupos na seção de Orientações
     #Quando iniciamos a página, tem um dropdown invisivel e essa função exibe ele se o botão professor foi apertado
     
     ctx = callback_context
@@ -501,13 +545,14 @@ def mostrar_ocultar_filtro_eventos(btn_professor, btn_geral, btn_grupo):
 
 @callback(
     Output("filtro-grupo-eventos", "options"),
+    Output("filtro-grupo-orientacoes", "options"),
     Input("store-lista-dfs", "data")
 )
 def popular_opcoes_de_grupo(stored_data):
     if not stored_data: return []
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
-    return grupos
+    return grupos, grupos #Temos dois retornos de grupo pois esses dado estão populando o filtro da seção de eventos e de orientações
 
 @callback(
     Output('btn-geral', 'style'),
@@ -533,7 +578,6 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
         return base
 
     return style_botao(modo == 'geral'), style_botao(modo == 'grupo'), style_botao(modo == 'professor')
-
 
 @callback(
     Output("section-orientacoes", "style"),
