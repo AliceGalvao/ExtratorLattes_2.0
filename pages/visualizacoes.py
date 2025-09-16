@@ -88,7 +88,16 @@ layout = html.Div([
 
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-registros-container"),
+        html.Div(id="filtros-registros-container", 
+                 children=[html.Div(id="wrapper-filtro-registros", 
+                                    style={'display': 'none'}, 
+                                    children=[
+                                        html.Div([
+                                        html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
+                                        dcc.Dropdown(id="filtro-grupo-registros", options=[], clearable=True, placeholder="Selecione o grupo")
+                                        ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'})
+                                    ])
+            ]),
         html.Div(id="container-graficos-registros", style={
             'display': 'flex',
             'flexDirection': 'row',
@@ -114,7 +123,7 @@ layout = html.Div([
                                 html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
                                 dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Selecione o grupo")
                                 ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
-                              ])
+                            ])
                      ]),
         html.Div(id="container-graficos-eventos", style={
             'display': 'flex',
@@ -407,9 +416,10 @@ def atualizar_graficos_orientacoes(selected_viz, btn_geral, btn_grupo, btn_profe
     Input("btn-geral", "n_clicks"),
     Input("btn-grupo", "n_clicks"),
     Input("btn-professor", "n_clicks"),
+    Input("filtro-grupo-registros", "value"),
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_registros(selected_viz, btn_geral, btn_grupo, btn_professor, stored_data):
+def atualizar_graficos_registros(selected_viz, btn_geral, btn_grupo, btn_professor, grupo_selecionado, stored_data):
     if not stored_data or "registros" not in selected_viz:
         return []
 
@@ -418,7 +428,7 @@ def atualizar_graficos_registros(selected_viz, btn_geral, btn_grupo, btn_profess
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'btn-geral'
     modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
 
-    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo)
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
     return gerar_graficos_registros(dfs_filtrados, modo)
 
@@ -452,7 +462,7 @@ def mostrar_filtros_orientacoes(selected_viz):
         return html.Div()
 
     filtros_padrao = html.Div([
-        html.Div([html.Label("Status:"), dcc.Dropdown(
+        html.Div([html.Label("Status:", style={'fontWeight':'bold'}), dcc.Dropdown(
             id="filtro-status-orientacoes",
             options=[{"label": "Em andamento", "value": "andamento"},
                      {"label": "Concluído", "value": "concluido"},
@@ -460,7 +470,7 @@ def mostrar_filtros_orientacoes(selected_viz):
             value="ambos",
             clearable=False
         )], style={"display":"inline-block", "marginRight":"10px", 'width':'150px'}),
-        html.Div([html.Label("Tipo:"), dcc.Dropdown(
+        html.Div([html.Label("Tipo:", style={'fontWeight':'bold'}), dcc.Dropdown(
             id="filtro-tipo-orientacoes",
             options=[{"label": "IC", "value": "ic"},
                      {"label": "Mestrado", "value": "mestrado"},
@@ -469,7 +479,7 @@ def mostrar_filtros_orientacoes(selected_viz):
             value="todos",
             clearable=False
         )], style={"display":"inline-block", "marginRight":"10px", 'width':'150px'}),
-        html.Div([html.Label("Natureza:"), dcc.Dropdown(
+        html.Div([html.Label("Natureza:", style={'fontWeight':'bold'}), dcc.Dropdown(
             id="filtro-natureza-orientacoes",
             options=[{"label": "Orientações", "value": "orientacoes"},
                      {"label": "Coorientações", "value": "coorientacoes"},
@@ -485,7 +495,7 @@ def mostrar_filtros_orientacoes(selected_viz):
         style={'display': 'none'},
         children=[
              html.Div([
-                html.Label("Filtrar por Grupo:"),
+                html.Label("Filtrar por Grupo:", style={'fontWeight':'bold'}),
                 dcc.Dropdown(
                     id="filtro-grupo-orientacoes",
                     options=[],
@@ -542,17 +552,41 @@ def mostrar_ocultar_filtro_grupo_orientacoes(btn_professor, btn_geral, btn_grupo
         return {'display': 'block'}
     else:
         return {'display': 'none'}
+    
+@callback(
+    Output("wrapper-filtro-registros", "style"),
+    Input("btn-professor", "n_clicks"),
+    Input("btn-geral", "n_clicks"),
+    Input("btn-grupo", "n_clicks")
+)
+def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
+    #Função que controla a exibiçao do filtro de grupos na seção de Registros
+    #Quando iniciamos a página, tem um dropdown invisivel e essa função exibe ele se o botão professor foi apertado
+    
+    ctx = callback_context
+    if not ctx.triggered:
+        return {'display': 'none'}
+
+    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    if btn_id == 'btn-professor':
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
 
 @callback(
     Output("filtro-grupo-eventos", "options"),
     Output("filtro-grupo-orientacoes", "options"),
+    Output("filtro-grupo-registros", "options"),
     Input("store-lista-dfs", "data")
 )
 def popular_opcoes_de_grupo(stored_data):
-    if not stored_data: return []
+    if not stored_data: 
+        return []
+    
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
-    return grupos, grupos #Temos dois retornos de grupo pois esses dado estão populando o filtro da seção de eventos e de orientações
+    return grupos, grupos, grupos #Temos dois retornos de grupo pois esses dado estão populando o filtro da seção de eventos e de orientações
 
 @callback(
     Output('btn-geral', 'style'),
