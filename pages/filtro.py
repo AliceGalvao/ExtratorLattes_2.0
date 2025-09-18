@@ -215,11 +215,17 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio,
                         o1, o2, o3, registro, publicacoes, outros):
     logger.info("[.] Processando resultados com base nas seleções da página de filtros")
 
+    #O objetivo dessa verificação é impedir atualizações sem que seja pressionado o botao de extrair.
+    #Quando o navegador inicializa a tela, ela muda o n_clicks de None para 0 e isso provocava o modal de erro aparecer
+    #Fazer essa verificação, impede que essa mudança seja gatilho de comportamentos não desejados
+    if n_clicks is None or n_clicks < 1: 
+        raise PreventUpdate
+    
     if not uploaded_file_data_dict:
         return "", no_update, True, "Por favor, carregue um arquivo na tela inicial."
 
     if not ano_inicio:
-        return "", no_update, no_update, True, "Por favor, selecione um ano de inicio."
+        return "", no_update, True, "Por favor, selecione um ano de inicio."
 
     try:
         tipo_extracao = uploaded_file_data_dict.get('tipo', 'programas')
@@ -314,7 +320,6 @@ def redirecionar_apos_processamento(store_data):
         logger.info("Redirecionando automaticamente para /visualizacoes após processamento.")
         return "/visualizacoes"
     raise PreventUpdate
-
 
 @callback(
     Output('store-redirecionamento-realizado', 'data', allow_duplicate=True),
