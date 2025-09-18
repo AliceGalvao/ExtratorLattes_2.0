@@ -139,7 +139,8 @@ layout = html.Div([
               "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
               "width": "95%", "maxWidth": "1500px"}),
 
-    dcc.Download(id="download-dataframe-xlsx")
+    dcc.Download(id="download-dataframe-xlsx"),
+    dcc.Store(id='store-modo-atual')
 ])
 
 def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=65, altura_por_barra=50,
@@ -255,6 +256,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
+
 
 def gerar_graficos_registros(dfs, modo):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
@@ -387,69 +389,83 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
+# Esse callback que eu criei é o novo callback para guardar o modo atual
+@callback(
+    Output('store-modo-atual', 'data'),
+    Input('btn-geral', 'n_clicks'),
+    Input('btn-grupo', 'n_clicks'),
+    Input('btn-professor', 'n_clicks'),
+)
+def guardar_modo_atual(btn_geral, btn_grupo, btn_professor):
+    ctx = callback_context
+    if not ctx.triggered:
+        return 'geral'
+    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
+    return modo
+
+@callback(
+    Output('filtro-status-orientacoes', 'value'),
+    Output('filtro-tipo-orientacoes', 'value'),
+    Output('filtro-natureza-orientacoes', 'value'),
+    Output('filtro-grupo-orientacoes', 'value'),
+    Output('filtro-grupo-registros', 'value'),
+    Output('filtro-grupo-eventos', 'value'),
+    Input('store-modo-atual', 'data'),  # Gatilho: A mudança na memória
+    prevent_initial_call=True
+)
+def resetar_filtros_ao_mudar_modo(modo_selecionado):
+    return 'ambos', 'todos', 'soma', None, None, None
+
 @callback(
     Output("container-graficos", "children"),
     Input("checklist-viz", "value"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks"),
-    Input("btn-professor", "n_clicks"),
-    Input("filtro-status-orientacoes", "value"),
+    Input('store-modo-atual', 'data'),  # Gatilho principal
+    Input("filtro-status-orientacoes", "value"),  # Gatilhos secundários
     Input("filtro-tipo-orientacoes", "value"),
     Input("filtro-natureza-orientacoes", "value"),
     Input("filtro-grupo-orientacoes", "value"),
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_orientacoes(selected_viz, btn_geral, btn_grupo, btn_professor,
+def atualizar_graficos_orientacoes(selected_viz, modo_atual,
                                    status, tipo, natureza, grupo_selecionado, stored_data):
     if not stored_data or "orientacoes" not in selected_viz:
         return []
+
+    modo = modo_atual if modo_atual else 'geral'
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
-    ctx = callback_context
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'btn-geral'
-    modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo) # Passando 'modo'
+    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo)
+
 
 @callback(
     Output("container-graficos-registros", "children"),
     Input("checklist-viz", "value"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks"),
-    Input("btn-professor", "n_clicks"),
-    Input("filtro-grupo-registros", "value"),
+    Input('store-modo-atual', 'data'),  # Gatilho principal
+    Input("filtro-grupo-registros", "value"),  # Gatilho secundário
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_registros(selected_viz, btn_geral, btn_grupo, btn_professor, grupo_selecionado, stored_data):
+def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, stored_data):
     if not stored_data or "registros" not in selected_viz:
         return []
-
+    modo = modo_atual if modo_atual else 'geral'
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
-    ctx = callback_context
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'btn-geral'
-    modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
-
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-
     return gerar_graficos_registros(dfs_filtrados, modo)
+
 
 @callback(
     Output("container-graficos-eventos", "children"),
     Input("checklist-viz", "value"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks"),
-    Input("btn-professor", "n_clicks"),
-    Input("filtro-grupo-eventos", "value"),
+    Input('store-modo-atual', 'data'),  # Gatilho principal
+    Input("filtro-grupo-eventos", "value"),  # Gatilho secundário
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_eventos(selected_viz, btn_geral, btn_grupo, btn_professor, grupo_selecionado, stored_data):
+def atualizar_graficos_eventos(selected_viz, modo_atual, grupo_selecionado, stored_data):
     if not stored_data or "eventos_publicacoes" not in selected_viz:
         return []
+    modo = modo_atual if modo_atual else 'geral'
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
-    
-    ctx = callback_context
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'btn-geral'
-    modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
-    
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
     return gerar_graficos_eventos_publicacoes(dfs_filtrados, modo)
 
@@ -460,57 +476,37 @@ def atualizar_graficos_eventos(selected_viz, btn_geral, btn_grupo, btn_professor
 def mostrar_filtros_orientacoes(selected_viz):
     if "orientacoes" not in selected_viz:
         return html.Div()
-
     filtros_padrao = html.Div([
-        html.Div([html.Label("Status:", style={'fontWeight':'bold'}), dcc.Dropdown(
+        html.Div([html.Label("Status:", style={'fontWeight': 'bold'}), dcc.Dropdown(
             id="filtro-status-orientacoes",
-            options=[{"label": "Em andamento", "value": "andamento"},
-                     {"label": "Concluído", "value": "concluido"},
-                     {"label": "Ambos", "value": "ambos"}],
-            value="ambos",
-            clearable=False
-        )], style={"display":"inline-block", "marginRight":"10px", 'width':'150px'}),
-        html.Div([html.Label("Tipo:", style={'fontWeight':'bold'}), dcc.Dropdown(
+            options=[{"label": "Em andamento", "value": "andamento"}, {"label": "Concluído", "value": "concluido"},
+                     {"label": "Ambos", "value": "ambos"}], value="ambos", clearable=False
+        )], style={"display": "inline-block", "marginRight": "10px", 'width': '150px'}),
+        html.Div([html.Label("Tipo:", style={'fontWeight': 'bold'}), dcc.Dropdown(
             id="filtro-tipo-orientacoes",
-            options=[{"label": "IC", "value": "ic"},
-                     {"label": "Mestrado", "value": "mestrado"},
-                     {"label": "Doutorado", "value": "doutorado"},
-                     {"label": "Todos", "value": "todos"}],
-            value="todos",
+            options=[{"label": "IC", "value": "ic"}, {"label": "Mestrado", "value": "mestrado"},
+                     {"label": "Doutorado", "value": "doutorado"}, {"label": "Todos", "value": "todos"}], value="todos",
             clearable=False
-        )], style={"display":"inline-block", "marginRight":"10px", 'width':'150px'}),
-        html.Div([html.Label("Natureza:", style={'fontWeight':'bold'}), dcc.Dropdown(
-            id="filtro-natureza-orientacoes",
-            options=[{"label": "Orientações", "value": "orientacoes"},
-                     {"label": "Coorientações", "value": "coorientacoes"},
-                     {"label": "Soma dos dois", "value": "soma"}],
-            value="soma",
+        )], style={"display": "inline-block", "marginRight": "10px", 'width': '150px'}),
+        html.Div([html.Label("Natureza:", style={'fontWeight': 'bold'}), dcc.Dropdown(
+            id="filtro-natureza-orientacoes", options=[{"label": "Orientações", "value": "orientacoes"},
+                                                       {"label": "Coorientações", "value": "coorientacoes"},
+                                                       {"label": "Soma dos dois", "value": "soma"}], value="soma",
             clearable=False
-        )], style={"display":"inline-block", 'width':'150px'}),
-    ], style={"display":"flex", "gap":"20px"})
-
-    #Solução (temporária) para podermos renderizar esse elemento ao mudar a visualização para Professor
+        )], style={"display": "inline-block", 'width': '150px'}),
+    ], style={"display": "flex", "gap": "20px"})
     filtro_condicional = html.Div(
-        id='wrapper-filtro-orientacoes',
-        style={'display': 'none'},
+        id='wrapper-filtro-orientacoes', style={'display': 'none'},
         children=[
-             html.Div([
-                html.Label("Filtrar por Grupo:", style={'fontWeight':'bold'}),
-                dcc.Dropdown(
-                    id="filtro-grupo-orientacoes",
-                    options=[],
-                    clearable=True,
-                    placeholder="Todos os grupos"
-                )
+            html.Div([
+                html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold'}),
+                dcc.Dropdown(id="filtro-grupo-orientacoes", options=[], clearable=True, placeholder="Todos os grupos")
             ], style={'width': '300px', 'marginLeft': '20px'})
         ]
     )
-    
-    return html.Div([
-        filtros_padrao,
-        filtro_condicional
-    ], style={'display': 'flex', 'alignItems': 'center'})
-    
+    return html.Div([filtros_padrao, filtro_condicional], style={'display': 'flex', 'alignItems': 'center'})
+
+
 @callback(
     Output("wrapper-filtro-eventos", "style"),
     Input("btn-professor", "n_clicks"),
@@ -518,19 +514,14 @@ def mostrar_filtros_orientacoes(selected_viz):
     Input("btn-grupo", "n_clicks")
 )
 def mostrar_ocultar_filtro_grupo_eventos(btn_professor, btn_geral, btn_grupo):
-    #Função que controla a exibiçao do filtro de grupos na seção de Eventos e Publicações e Orientações
-    #Quando iniciamos a página, tem um dropdown invisivel e essa função exibe ele se o botão professor foi apertado
-    
     ctx = callback_context
-    if not ctx.triggered:
-        return {'display': 'none'}
-
+    if not ctx.triggered: return {'display': 'none'}
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    
     if btn_id == 'btn-professor':
         return {'display': 'block'}
     else:
         return {'display': 'none'}
+
 
 @callback(
     Output("wrapper-filtro-orientacoes", "style"),
@@ -539,20 +530,15 @@ def mostrar_ocultar_filtro_grupo_eventos(btn_professor, btn_geral, btn_grupo):
     Input("btn-grupo", "n_clicks")
 )
 def mostrar_ocultar_filtro_grupo_orientacoes(btn_professor, btn_geral, btn_grupo):
-    #Função que controla a exibiçao do filtro de grupos na seção de Orientações
-    #Quando iniciamos a página, tem um dropdown invisivel e essa função exibe ele se o botão professor foi apertado
-    
     ctx = callback_context
-    if not ctx.triggered:
-        return {'display': 'none'}
-
+    if not ctx.triggered: return {'display': 'none'}
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    
     if btn_id == 'btn-professor':
         return {'display': 'block'}
     else:
         return {'display': 'none'}
-    
+
+
 @callback(
     Output("wrapper-filtro-registros", "style"),
     Input("btn-professor", "n_clicks"),
@@ -560,19 +546,14 @@ def mostrar_ocultar_filtro_grupo_orientacoes(btn_professor, btn_geral, btn_grupo
     Input("btn-grupo", "n_clicks")
 )
 def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
-    #Função que controla a exibiçao do filtro de grupos na seção de Registros
-    #Quando iniciamos a página, tem um dropdown invisivel e essa função exibe ele se o botão professor foi apertado
-    
     ctx = callback_context
-    if not ctx.triggered:
-        return {'display': 'none'}
-
+    if not ctx.triggered: return {'display': 'none'}
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    
     if btn_id == 'btn-professor':
         return {'display': 'block'}
     else:
         return {'display': 'none'}
+
 
 @callback(
     Output("filtro-grupo-eventos", "options"),
@@ -581,12 +562,12 @@ def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
     Input("store-lista-dfs", "data")
 )
 def popular_opcoes_de_grupo(stored_data):
-    if not stored_data: 
-        return []
-    
+    if not stored_data:
+        return [], [], []
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
-    return grupos, grupos, grupos #Temos dois retornos de grupo pois esses dado estão populando o filtro da seção de eventos e de orientações
+    return grupos, grupos, grupos
+
 
 @callback(
     Output('btn-geral', 'style'),
@@ -602,16 +583,17 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
         modo = 'geral'
     else:
         btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-        modo = {'btn-geral':'geral','btn-grupo':'grupo','btn-professor':'professor'}.get(btn_id,'geral')
+        modo = {'btn-geral': 'geral', 'btn-grupo': 'grupo', 'btn-professor': 'professor'}.get(btn_id, 'geral')
 
     def style_botao(ativo):
-        base = {'padding': '10px 10px', 'border': 'none', 'borderRadius': '20px', 'margin': '5px',
-                'cursor': 'pointer', 'boxShadow': '0px 2px 5px rgba(0,0,0,0.2)'}
+        base = {'padding': '10px 10px', 'border': 'none', 'borderRadius': '20px', 'margin': '5px', 'cursor': 'pointer',
+                'boxShadow': '0px 2px 5px rgba(0,0,0,0.2)'}
         base['backgroundColor'] = '#28a745' if ativo else '#ccc'
         base['color'] = 'white' if ativo else '#666'
         return base
 
     return style_botao(modo == 'geral'), style_botao(modo == 'grupo'), style_botao(modo == 'professor')
+
 
 @callback(
     Output("section-orientacoes", "style"),
@@ -620,19 +602,17 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
     Input("checklist-viz", "value")
 )
 def toggle_sections(selected_viz):
-    style_orientacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9",
-                         "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-                         "width": "95%", "maxWidth": "1400px"} if "orientacoes" in selected_viz else {"display": "none"}
-
-    style_registros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9",
-                       "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-                       "width": "95%", "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
-
-    style_eventos = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9",
-                     "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-                     "width": "95%", "maxWidth": "1400px"} if "eventos_publicacoes" in selected_viz else {"display": "none"}
-
+    style_orientacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                         "maxWidth": "1400px"} if "orientacoes" in selected_viz else {"display": "none"}
+    style_registros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+                       "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                       "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
+    style_eventos = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+                     "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                     "maxWidth": "1400px"} if "eventos_publicacoes" in selected_viz else {"display": "none"}
     return style_orientacoes, style_registros, style_eventos
+
 
 @callback(
     Output("download-dataframe-xlsx", "data"),
