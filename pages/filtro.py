@@ -203,6 +203,7 @@ layout = html.Div([
     Input('btn-extrair', 'n_clicks'),
     State('store-uploaded-data', 'data'),
     State('input-ano-inicio', 'value'),
+    State('input-ano-termino', 'value'),
     State('filtro-orientacao-1', 'value'),
     State('filtro-orientacao-2', 'value'),
     State('filtro-orientacao-3', 'value'),
@@ -211,7 +212,7 @@ layout = html.Div([
     State('filtro-outros', 'value'),
     prevent_initial_call=True
 )
-def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio,
+def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termino,
                         o1, o2, o3, registro, publicacoes, outros):
     logger.info("[.] Processando resultados com base nas seleções da página de filtros")
 
@@ -224,8 +225,8 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio,
     if not uploaded_file_data_dict:
         return "", no_update, True, "Por favor, carregue um arquivo na tela inicial."
 
-    if not ano_inicio:
-        return "", no_update, True, "Por favor, selecione um ano de inicio."
+    if not ano_inicio or not ano_termino:
+        return "", no_update, True, "Por favor, selecione ano de início e término."
 
     try:
         tipo_extracao = uploaded_file_data_dict.get('tipo', 'programas')
@@ -295,8 +296,8 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio,
 
         logger.info(f"[.] Métricas finais: {metricas_para_leitor}")
         leitor = Leitor()
-        lista_dfs = leitor.gerar_estrutura_de_csv_programas(ano=ano_inicio, metricas=metricas_para_leitor)
-
+        lista_dfs = leitor.gerar_estrutura_de_csv_programas(ano_inicio=ano_inicio, ano_termino=ano_termino,
+                                                            metricas=metricas_para_leitor)
         logger.info(f"Dados para armazenar no store (tipo {type(lista_dfs)}): {lista_dfs}")
         try:
             logger.info(f"Como JSON string? {json.dumps(lista_dfs)[:500]}")  # primeiros 500 chars

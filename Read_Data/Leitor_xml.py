@@ -23,12 +23,25 @@ from Filtros.constantes_filtros import *
 
 class Leitor_xml:
 
-    def __init__(self, xml, ano=None):
+    def __init__(self, xml, ano_inicio=None, ano_termino=None):
 
         self.curriculo = ET.parse(xml)
         self.root = self.curriculo.getroot()
-        self.ano = ano
+        self.ano_inicio = ano_inicio
+        self.ano_termino = ano_termino
 
+    def _filtro_ano(self, ano):
+        if not ano:
+            return False
+        try:
+            ano_int = int(ano)
+        except:
+            return False
+        if self.ano_inicio and ano_int < self.ano_inicio:
+            return True
+        if self.ano_termino and ano_int > self.ano_termino:
+            return True
+        return False
 
     def extrair_nome_id_bolsista(self, id_vazio):
 
@@ -77,9 +90,8 @@ class Leitor_xml:
                 titulo = dados.get(TITULO)
                 natureza = dados.get(NATUREZA)
 
-                if (self.ano) and (ano):
-                    if int(ano) < self.ano:
-                        continue
+                if self._filtro_ano(ano):
+                    continue
 
                 orientacoes.append(Orientacao.Orientacao(titulo, concluido, natureza, tipo_orientacao, cods_instituicao, nome_instituicao, curso, ano))
 
@@ -107,9 +119,8 @@ class Leitor_xml:
                 curso = detalhamento.get(CURSO)
                 ano = dados.get(ANO)
 
-                if (self.ano) and (ano):
-                    if int(ano) < self.ano:
-                        continue
+                if self._filtro_ano(ano):
+                    continue
 
                 orientacoes_ic.append(Orientacao.Orientacao(titulo, concluido, natureza, tipo_orientacao, cods_instituicao, nome_instituicao, curso, ano))
 
@@ -133,9 +144,8 @@ class Leitor_xml:
                 titulo_anais = detalhamento.get(TITULO_DOS_ANAIS)
                 ano = dados.get(ANO_TRABALHO)
 
-                if (self.ano) and (ano):
-                    if int(ano) < self.ano:
-                        continue
+                if self._filtro_ano(ano):
+                    continue
 
                 trabalhos.append(Trabalho_completo_evento.Trabalho_completo_evento(titulo, natureza, nome_evento, titulo_anais, ano))
 
@@ -161,9 +171,8 @@ class Leitor_xml:
             instituicao = child.get(INSTITUICAO_REGISTRO_DEPOSITO)
             data_pedido = child.get(DATA_PEDIDO_PATENTE)
 
-            if (self.ano) and (data_pedido):
-                if int(data_pedido[4:]) < self.ano:
-                    continue
+            if self._filtro_ano(data_pedido):
+                continue
 
             patentes.append(Patente.Patente(tipo,titulo, codigo, instituicao, data_pedido))
 
@@ -186,9 +195,8 @@ class Leitor_xml:
                 tipo = dados.get(TIPO)
                 ano = dados.get(ANO)
 
-                if (self.ano) and (ano):
-                    if int(ano) < self.ano:
-                        continue
+                if self._filtro_ano(ano):
+                    continue
 
                 livros_isbn.append(Publicacao_livro_ISBN.Publicacao_livro_ISBN(titulo, tipo, isbn, ano))
 
@@ -212,9 +220,8 @@ class Leitor_xml:
                 tipo = dados.get(TIPO)
                 ano = dados.get(ANO)
 
-                if (self.ano) and (ano):
-                    if int(ano) < self.ano:
-                        continue
+                if self._filtro_ano(ano):
+                    continue
 
                 capitulos_isbn.append(Publicacao_capitulo_ISBN.Publicacao_capitulo_ISBN(titulo_capitulo, titulo_livro, tipo, isbn, ano))
 
@@ -240,9 +247,8 @@ class Leitor_xml:
                 periodico = detalhamento.get(TITULO_PERIODICO)
                 ano = dados.get(ANO_ARTIGO)
 
-                if (self.ano) and (ano):
-                    if int(ano) < self.ano:
-                        continue
+                if self._filtro_ano(ano):
+                    continue
 
                 if qualis in LISTA_QUALIS:
                     artigos.append(Publicacao_cientifica.Publicacao_cientifica(titulo, periodico, issn, qualis, ano))
@@ -271,9 +277,8 @@ class Leitor_xml:
                     periodico = detalhamento.get(TITULO_PERIODICO)
                     ano = dados.get(ANO_ARTIGO)
 
-                    if (self.ano) and (ano):
-                        if int(ano) < self.ano:
-                            continue
+                    if self._filtro_ano(ano):
+                        continue
 
                     tecnicos_e_artisticos.append(Publicacao_tecnica_e_artistica.Publicacao_tecnica_e_artistica(titulo, periodico, issn, qualis, ano))
 
@@ -291,9 +296,8 @@ class Leitor_xml:
             titulo_evento = dados.get(TITULO_EVENTO)
             ano_evento = dados.get(ANO)
 
-            if (self.ano) and (ano_evento):
-                if int(ano_evento) < self.ano:
-                    continue
+            if self._filtro_ano(ano_evento):
+                continue
 
             eventos_organizados.append(Organizacao_eventos.Organizacao_eventos(titulo_evento, tipo_evento, ano_evento))
 
@@ -308,9 +312,8 @@ class Leitor_xml:
 
             ano = projeto.get(ANO_PROJETO)
 
-            if (self.ano) and (ano):
-                if int(ano) < self.ano:
-                    continue
+            if self._filtro_ano(ano):
+                continue
 
             natureza = projeto.get(NATUREZA_PROJETO)
             if natureza == f1:
