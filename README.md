@@ -1,5 +1,18 @@
 # ExtratorLattes_2.0
 
+Meio de contato para as infos:
+infraestrutura.dtic@upe.br
+
+Acessar o Putty:
+baixar a versão adequada em --> https://openvpn.net/connect-docs/connect-for-windows.html
+Configurar a VPN (com as infos fornecidas) e se mantenha conectado
+Baixe o Putty --> https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+Configurar o Putty (com as infos fornecidas)
+Fazer login usuário:sistemas (existem outros) e colocar a senha
+Entrar no repositório
+Ativar o amiente virtual
+rodar app.py
+
 Comandos muito utilizados no Putty:
 . venv/bin/activate (ativar a venv)
 lsof -i :8050 (quando a porta for 8050 para achar o processo que está rodando na porta) 
@@ -24,4 +37,3 @@ Do Putty para o GitHub:
 
 rodar o app:
 python run app.py
-
