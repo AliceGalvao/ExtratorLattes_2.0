@@ -37,3 +37,6 @@ Do Putty para o GitHub:
 
 rodar o app:
 python run app.py
+
+OBS:
+Para facilitar a adição do repositório na máquina: Deixar o rep público quando clonar do GitHub
