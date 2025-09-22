@@ -1,3 +1,7 @@
+#Adicionei para nao rastrear pasta usada para os dados ZIPs
+Extrator_Lattes_Result/
+PPGS/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

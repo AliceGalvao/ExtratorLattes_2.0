@@ -35,8 +35,8 @@ class Leitor:
             else:
                 logger.info(f'[.] A pasta {programa} existe')
 
-    def read_pesquisador(self, xml, ano=None):
-        leitor_xml = Leitor_xml(xml, ano)
+    def read_pesquisador(self, xml, ano_inicio=None, ano_termino=None):
+        leitor_xml = Leitor_xml(xml, ano_inicio, ano_termino)
         id = os.path.basename(xml).split('.')[0]
 
         # eixo Ensino
@@ -141,7 +141,7 @@ class Leitor:
                 eventos_programa.append((titulo, ano))
         return set(eventos_programa)
 
-    def read_pesquisadores_programas(self, programa: str, ano=None):
+    def read_pesquisadores_programas(self, programa: str, ano_inicio=None, ano_termino=None):
         pesquisadores = []
         name_file = os.path.join(PASTA_PROGRAMAS, programa)
 
@@ -152,7 +152,7 @@ class Leitor:
             for arquivo in arquivos_xml:
                 xml = os.path.join(name_file, arquivo)
                 try:
-                    pesquisador = self.read_pesquisador(xml, ano)
+                    pesquisador = self.read_pesquisador(xml, ano_inicio, ano_termino)
                     pesquisadores.append(pesquisador)
                 except Exception as e:
                     logger.error(f'[X] Erro ao ler pesquisador {arquivo}: {str(e)}')
@@ -175,7 +175,7 @@ class Leitor:
 
         return pesquisadores
 
-    def gerar_estrutura_de_csv_programas(self, ano=None, metricas=None):
+    def gerar_estrutura_de_csv_programas(self, ano_inicio=None, ano_termino=None, metricas=None):
         try:
             lista_dfs = []
             programas_totais = []
@@ -191,7 +191,7 @@ class Leitor:
                 return None
 
             for programa in programas:
-                pesquisadores_programa = self.read_pesquisadores_programas(programa, ano)
+                pesquisadores_programa = self.read_pesquisadores_programas(programa, ano_inicio, ano_termino)
                 eventos_organizados = self.checa_organizacao_evento(pesquisadores_programa)
 
                 if not pesquisadores_programa:
