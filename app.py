@@ -184,5 +184,4 @@ def close_error_modal(n_clicks, is_open):
     return no_update
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    app.run(debug=True, host='10.0.83.49', port=8052)

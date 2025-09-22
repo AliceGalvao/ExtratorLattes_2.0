@@ -40,12 +40,4 @@ trove_classifiers==2025.9.9.12
 urllib3_secure_extra==0.1.0
 xx==3.3.2
 zeep==4.3.1
-
-'''
-Deixei essas duas dependências como comentário 
-pois estavam dando problema na instalação das 
-dependências.
-
-#jnius==1.1.0
-#xmlrpclib==1.0.1
-'''
+openpyxl
