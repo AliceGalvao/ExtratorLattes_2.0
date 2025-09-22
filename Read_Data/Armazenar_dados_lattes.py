@@ -221,7 +221,7 @@ class StorageLattes:
                 os.makedirs(path_programa)
 
             logger.info(f"[.] Baixando curriculos de {len(ids)} pesquisadores")
-            #self.baixar_dados_docentes(ids, PASTA_EXTRATOR)
+            self.baixar_dados_docentes(ids, PASTA_EXTRATOR)
             self.arquivos_extrator = os.listdir(PASTA_EXTRATOR)
 
             if len(ids) != 0:
