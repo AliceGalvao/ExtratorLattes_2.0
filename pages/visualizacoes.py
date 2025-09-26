@@ -613,6 +613,14 @@ def toggle_sections(selected_viz):
                      "maxWidth": "1400px"} if "eventos_publicacoes" in selected_viz else {"display": "none"}
     return style_orientacoes, style_registros, style_eventos
 
+def generate_excel(data):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        for sheet_name, json_data in data.items():
+            df = pd.read_json(io.StringIO(json_data), orient='split')
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+    output.seek(0)
+    return output
 
 @callback(
     Output("download-dataframe-xlsx", "data"),
@@ -626,16 +634,7 @@ def download_excel(n_clicks, stored_data):
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     excel_io = generate_excel({k: df.to_json(orient='split') for k, df in dfs.items()})
     return dcc.send_bytes(excel_io.getvalue(), "dados_extrator_lattes.xlsx")
-
-def generate_excel(data):
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        for sheet_name, json_data in data.items():
-            df = pd.read_json(io.StringIO(json_data), orient='split')
-            df.to_excel(writer, sheet_name=sheet_name, index=False)
-    output.seek(0)
-    return output
-
+    
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
     if modo == 'geral':
         df_total = dfs.get('total', pd.DataFrame())
