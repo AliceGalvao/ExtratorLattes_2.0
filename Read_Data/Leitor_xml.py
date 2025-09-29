@@ -160,8 +160,8 @@ class Leitor_xml:
 
             tipo = child.get(TIPO_PATENTE)
             if f1:
-                if tipo != f1:
-                    continue
+               if tipo != f1:
+                   continue
             else:
                 if tipo == PATENTE_SOFTWARE:
                     continue
@@ -169,15 +169,14 @@ class Leitor_xml:
             titulo = child.get(TITULO_PATENTE)
             codigo = child.get(CODIGO_PATENTE)
             instituicao = child.get(INSTITUICAO_REGISTRO_DEPOSITO)
-            data_pedido = child.get(DATA_PEDIDO_PATENTE)
+            data_concessao = child.get(DATA_CONCESSAO_PATENTE)
 
-            if self._filtro_ano(data_pedido):
+            if self._filtro_ano(data_concessao):
                 continue
 
-            patentes.append(Patente.Patente(tipo,titulo, codigo, instituicao, data_pedido))
+            patentes.append(Patente.Patente(tipo,titulo, codigo, instituicao, data_concessao))
 
         return patentes
-
 
     def extrair_livro_ISBN(self,child, f1, f2):
 
