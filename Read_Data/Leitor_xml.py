@@ -160,7 +160,7 @@ class Leitor_xml:
 
             tipo = child.get(TIPO_PATENTE)
             if f1:
-               if tipo != f1:
+               if tipo == f1:
                    continue
             else:
                 if tipo == PATENTE_SOFTWARE:
