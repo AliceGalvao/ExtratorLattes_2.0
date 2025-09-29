@@ -288,15 +288,3 @@ class Pesquisador:
         series.update(dict_qualis)
 
         return series
-
-
-
-
-
-
-
-
-
-
-
-
