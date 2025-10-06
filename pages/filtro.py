@@ -141,7 +141,7 @@ layout = html.Div([
         html.Div([
             html.Div("Ano de inicio:", style={'color': 'white', 'marginRight': '20px'}),
             dcc.Dropdown(
-                options=[{'label': str(year), 'value': year} for year in range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
+                options=[{'label': int(year), 'value': year} for year in range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
                 placeholder="Selecione um ano",
                 style={
                     'width': '200px',
@@ -153,7 +153,7 @@ layout = html.Div([
             ),
             html.Div("Ano de termino:", style={'color': 'white', 'marginRight': '20px'}),
             dcc.Dropdown(
-                options=[{'label': str(year), 'value': year} for year in range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
+                options=[{'label': int(year), 'value': year} for year in range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
                 placeholder="Selecione um ano",
                 style={
                     'width': '200px',
