@@ -191,7 +191,7 @@ class Leitor_xml:
             if self._filtro_ano(data_concessao):
                 if tipo != PATENTE_SOFTWARE:
                     continue
-                if tipo:
+                if not tipo:
                     continue
 
             patentes.append(Patente.Patente(tipo, titulo, codigo, instituicao, data_concessao))
