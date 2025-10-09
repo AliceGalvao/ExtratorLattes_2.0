@@ -94,7 +94,7 @@ class Leitor:
         projetos_desenvolvimento = leitor_xml.extrair_projetos(PROJETO, PROJETO_DESENVOLVIMENTO)
 
         # registros de software
-        registros_software = leitor_xml.extrair_patentes(REGISTRO_OU_PATENTE, PATENTE_SOFTWARE)
+        registros_software = leitor_xml.extrair_softwares(REGISTRO_OU_PATENTE, PATENTE_SOFTWARE)
 
         # cria pesquisador e define atributos
         pesquisador = Pesquisador(

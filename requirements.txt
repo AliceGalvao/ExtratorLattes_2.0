@@ -41,3 +41,4 @@ thread==2.0.5
 trove_classifiers==2025.9.9.12
 urllib3_secure_extra==0.1.0
 xx==3.3.2
+xlsxwriter

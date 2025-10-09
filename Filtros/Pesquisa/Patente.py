@@ -9,22 +9,3 @@ class Patente:
         self.codigo = codigo
         self.instituicao_deposito_registro = instituicao_deposito_registro
         self.data_concessao = data_concessao
-        self.ano = data_concessao[4:]
-        self.peso = self.peso()
-
-
-    def peso(self):
-
-        if self.data_concessao != None:
-
-            peso = PESO_REGISTRO_DE_PATENTE
-
-        else:
-
-            peso = PESO_DEPOSITO_DE_PATENTE
-
-        return peso
-
-    
-
-    
