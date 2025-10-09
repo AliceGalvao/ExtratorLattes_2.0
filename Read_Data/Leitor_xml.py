@@ -168,7 +168,7 @@ class Leitor_xml:
             data_concessao = child.get(DATA_CONCESSAO_PATENTE)
 
             if self._filtro_ano(data_concessao):
-                if tipo != PATENTE_SOFTWARE:
+                if tipo == PATENTE_SOFTWARE:
                     continue
 
             patentes.append(Patente.Patente(tipo,titulo, codigo, instituicao, data_concessao))
@@ -189,7 +189,7 @@ class Leitor_xml:
             data_concessao = child.get(DATA_CONCESSAO_PATENTE)
 
             if self._filtro_ano(data_concessao):
-                if tipo == PATENTE_SOFTWARE:
+                if tipo != PATENTE_SOFTWARE:
                     continue
                 if tipo:
                     continue
