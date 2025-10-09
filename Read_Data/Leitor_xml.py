@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from Filtros.Ensino import Orientacao
 from Filtros.Pesquisa import Trabalho_completo_evento
 from Filtros.Pesquisa import Patente
+from Filtros.Pesquisa import Software
 from Filtros.Pesquisa import Publicacao_livro_ISBN
 from Filtros.Pesquisa import Publicacao_capitulo_ISBN
 from Filtros.Pesquisa import Publicacao_cientifica
@@ -177,7 +178,7 @@ class Leitor_xml:
 
     def extrair_softwares(self, child, f1):
 
-        patentes = list()
+        softwares = list()
 
         for child in self.root.iter(child):
 
@@ -191,12 +192,10 @@ class Leitor_xml:
             if self._filtro_ano(data_concessao):
                 if tipo != PATENTE_SOFTWARE:
                     continue
-                if not tipo:
-                    continue
 
-            patentes.append(Patente.Patente(tipo, titulo, codigo, instituicao, data_concessao))
+            softwares.append(Software.Software(tipo, titulo, codigo, instituicao, data_concessao))
 
-        return patentes
+        return softwares
 
     def extrair_livro_ISBN(self,child, f1, f2):
 
