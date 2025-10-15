@@ -1,5 +1,6 @@
 import sys
 import os
+from re import search
 from wsgiref.simple_server import software_version
 
 import pandas as pd
@@ -193,7 +194,7 @@ class Leitor_xml:
                 if tipo != PATENTE_SOFTWARE:
                     continue
 
-            softwares.append(Software.Software(tipo, titulo, codigo, instituicao, data_concessao))
+                softwares.append(Software.Software(tipo, titulo, codigo, instituicao, data_concessao))
 
         return softwares
 
