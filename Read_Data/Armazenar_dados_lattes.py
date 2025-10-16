@@ -221,6 +221,7 @@ class StorageLattes:
                 os.makedirs(path_programa)
 
             logger.info(f"[.] Baixando curriculos de {len(ids)} pesquisadores")
+
             self.baixar_dados_docentes(ids, PASTA_EXTRATOR)
             self.arquivos_extrator = os.listdir(PASTA_EXTRATOR)
 
@@ -244,13 +245,13 @@ class StorageLattes:
                             faltantes.append(nome_zip.split('.')[0])
 
                 logger.info(f'[.] Arquivos na pasta: {os.listdir(path_programa)}')
-
+        
         if os.path.exists(PASTA_EXTRATOR):
             if os.path.isdir(PASTA_EXTRATOR):
                 shutil.rmtree(PASTA_EXTRATOR)  # Remove o diretório e seu conteúdo
             else:
                 os.remove(PASTA_EXTRATOR)  # Remove o arquivo
-
+        
         erros_extracao = []  # Criando uma lista de erros de extração, mesmo que esteja vazia para evitor erros
         return faltantes, erros_extracao
 

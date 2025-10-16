@@ -25,7 +25,7 @@ class Pesquisador:
         self.eventos_organizados = []
         self.projetos_pesquisa = []
         self.projetos_desenvolvimento = []
-        self.registros_software = []
+        self.softwares = []
         self.orientacoes_tcc = []
         self.orientacoes_tcc_tcr_especializacao = []
 
@@ -146,6 +146,18 @@ class Pesquisador:
                 p_patentes += patente.peso
 
             return p_patentes
+    def pontuacao_softwares(self):
+
+        p_softwares = 0
+
+        if len(self.softwares) == 0:
+            return 0
+
+        else:
+            for software in self.softwares:
+                p_softwares += software.peso
+
+            return p_softwares
 
     def pontuacao_pub_cientificas(self):
 
@@ -268,7 +280,7 @@ class Pesquisador:
             #"ORIENTAÇÕES CONC. TCC": len(self.orientacoes_tcc),
             #"ORIENTACOES CONC. ESPECIALIZACAO": len(self.orientacoes_tcc_tcr_especializacao),
             "PATENTES": len(self.patentes),
-            "REGISTROS DE SW": len(self.registros_software),
+            "REGISTROS DE SW": len(self.softwares),
             "LIVROS ISBN": len(self.publicacoes_livros_ISBN),
             "CAPÍTULOS ISBN": len(self.publicacoes_capitulos_ISBN),
             "PUB. TEC. E ART.": len(self.publicacoes_tecnicas_e_artisticas),

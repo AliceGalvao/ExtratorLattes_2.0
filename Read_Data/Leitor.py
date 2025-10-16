@@ -94,7 +94,7 @@ class Leitor:
         projetos_desenvolvimento = leitor_xml.extrair_projetos(PROJETO, PROJETO_DESENVOLVIMENTO)
 
         # registros de software
-        registros_software = leitor_xml.extrair_patentes(REGISTRO_OU_PATENTE, PATENTE_SOFTWARE)
+        softwares = leitor_xml.extrair_softwares(REGISTRO_OU_PATENTE, None)
 
         # cria pesquisador e define atributos
         pesquisador = Pesquisador(
@@ -116,7 +116,7 @@ class Leitor:
         pesquisador.eventos_organizados = eventos_organizados
         pesquisador.projetos_pesquisa = projetos_pesquisa
         pesquisador.projetos_desenvolvimento = projetos_desenvolvimento
-        pesquisador.registros_software = registros_software
+        pesquisador.softwares = softwares
 
         return pesquisador
 

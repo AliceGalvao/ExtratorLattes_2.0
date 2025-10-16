@@ -1,5 +1,8 @@
 import sys
 import os
+from re import search
+from wsgiref.simple_server import software_version
+
 import pandas as pd
 
 # Adicione o diretório raiz do seu projeto ao caminho de busca do Python
@@ -10,6 +13,7 @@ import xml.etree.ElementTree as ET
 from Filtros.Ensino import Orientacao
 from Filtros.Pesquisa import Trabalho_completo_evento
 from Filtros.Pesquisa import Patente
+from Filtros.Pesquisa import Software
 from Filtros.Pesquisa import Publicacao_livro_ISBN
 from Filtros.Pesquisa import Publicacao_capitulo_ISBN
 from Filtros.Pesquisa import Publicacao_cientifica
@@ -159,24 +163,40 @@ class Leitor_xml:
         for child in self.root.iter(child):
 
             tipo = child.get(TIPO_PATENTE)
-            if f1:
-               if tipo != f1:
-                   continue
-            else:
-                if tipo == PATENTE_SOFTWARE:
-                    continue
-
             titulo = child.get(TITULO_PATENTE)
             codigo = child.get(CODIGO_PATENTE)
             instituicao = child.get(INSTITUICAO_REGISTRO_DEPOSITO)
+            data_pedido = child.get(DATA_PEDIDO_PATENTE)
             data_concessao = child.get(DATA_CONCESSAO_PATENTE)
 
             if self._filtro_ano(data_concessao):
-                continue
+                if tipo == PATENTE_SOFTWARE:
+                    continue
 
             patentes.append(Patente.Patente(tipo,titulo, codigo, instituicao, data_concessao))
 
         return patentes
+
+    def extrair_softwares(self, child, f1):
+
+        softwares = list()
+
+        for child in self.root.iter(child):
+
+            tipo = child.get(TIPO_PATENTE)
+            titulo = child.get(TITULO_PATENTE)
+            codigo = child.get(CODIGO_PATENTE)
+            instituicao = child.get(INSTITUICAO_REGISTRO_DEPOSITO)
+            data_pedido = child.get(DATA_PEDIDO_PATENTE)
+            data_concessao = child.get(DATA_CONCESSAO_PATENTE)
+
+            if self._filtro_ano(data_concessao):
+                if tipo != PATENTE_SOFTWARE:
+                    continue
+
+                softwares.append(Software.Software(tipo, titulo, codigo, instituicao, data_concessao))
+
+        return softwares
 
     def extrair_livro_ISBN(self,child, f1, f2):
 
