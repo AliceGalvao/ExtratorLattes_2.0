@@ -157,45 +157,44 @@ class Leitor_xml:
 
 
     def extrair_patentes(self, child, f1):
-
         patentes = list()
-
         for child in self.root.iter(child):
-
             tipo = child.get(TIPO_PATENTE)
+            if tipo == PATENTE_SOFTWARE:
+                continue
+
+            data_pedido = child.get(DATA_PEDIDO_PATENTE)
+            ano_pedido = None
+            if data_pedido and len(data_pedido) >= 4:
+                ano_pedido = data_pedido[-4:]
+
+            if self._filtro_ano(ano_pedido):
+                continue
+
             titulo = child.get(TITULO_PATENTE)
             codigo = child.get(CODIGO_PATENTE)
             instituicao = child.get(INSTITUICAO_REGISTRO_DEPOSITO)
-            data_pedido = child.get(DATA_PEDIDO_PATENTE)
-            data_concessao = child.get(DATA_CONCESSAO_PATENTE)
-
-            if self._filtro_ano(data_concessao):
-                if tipo == PATENTE_SOFTWARE:
-                    continue
-
-            patentes.append(Patente.Patente(tipo,titulo, codigo, instituicao, data_concessao))
-
+            patentes.append(Patente.Patente(tipo, titulo, codigo, instituicao, data_pedido))
         return patentes
 
     def extrair_softwares(self, child, f1):
-
         softwares = list()
-
         for child in self.root.iter(child):
-
             tipo = child.get(TIPO_PATENTE)
+            if tipo != PATENTE_SOFTWARE:
+                continue
+            data_pedido = child.get(DATA_PEDIDO_PATENTE)
+            ano_pedido = None
+            if data_pedido and len(data_pedido) >= 4:
+                ano_pedido = data_pedido[-4:]
+
+            if self._filtro_ano(ano_pedido):
+                continue
+
             titulo = child.get(TITULO_PATENTE)
             codigo = child.get(CODIGO_PATENTE)
             instituicao = child.get(INSTITUICAO_REGISTRO_DEPOSITO)
-            data_pedido = child.get(DATA_PEDIDO_PATENTE)
-            data_concessao = child.get(DATA_CONCESSAO_PATENTE)
-
-            if self._filtro_ano(data_concessao):
-                if tipo != PATENTE_SOFTWARE:
-                    continue
-
-                softwares.append(Software.Software(tipo, titulo, codigo, instituicao, data_concessao))
-
+            softwares.append(Software.Software(tipo, titulo, codigo, instituicao, data_pedido))
         return softwares
 
     def extrair_livro_ISBN(self,child, f1, f2):
