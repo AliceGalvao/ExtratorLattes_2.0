@@ -19,6 +19,7 @@ Comandos muito utilizados no Putty:
 - kill -9 <PID> (matar o processo)
 - ifconfig (encontrar os ips)
 - nano <nome_do_arquivo> (para editar, deletar, escrever os arquivos diretamente)
+- htop mostra com detalhes todos os processos rodando na máquina, há também a possibilidade de interação
 
 Do Putty para o GitHub:
 - Passo 1: Gerar um token no GitHub
