@@ -157,7 +157,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
         "doutorado": {"orientacoes": {"concluido": ["O.P DOUTORADO CONC."], "andamento": ["O.P DOUTORADO AND."]},
                       "coorientacoes": {"concluido": ["C.O DOUTORADO CONC."], "andamento": ["C.O DOUTORADO AND."]}},
         "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []}, "coorientacoes": {"concluido": [], "andamento": []}},
-        "tcc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+        "conc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
                "coorientacoes": {"concluido": [], "andamento": []}},
         "tcc-conc": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. TCC"], "andamento": []},
                "coorientacoes": {"concluido": [], "andamento": []}}
@@ -492,7 +492,7 @@ def mostrar_filtros_orientacoes(selected_viz):
             id="filtro-tipo-orientacoes",
             options=[{"label": "IC", "value": "ic"}, {"label": "Mestrado", "value": "mestrado"},
                      {"label": "Doutorado", "value": "doutorado"}, {"label": "Todos", "value": "todos"},
-                     {"label": "TCC Concluído", "value": "tcc-conc"}, {"label": "TCC especialização", "value": "tcc-esp"},],
+                     {"label": "TCC Concluído", "value": "tcc-conc"}, {"label": "Especialização Concluída", "value": "conc-esp"},],
             value="todos",
 
             clearable=False
