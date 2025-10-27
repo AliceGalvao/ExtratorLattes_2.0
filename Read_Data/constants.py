@@ -148,8 +148,8 @@ METRICAS_DASH = [
         # {'label': 'Bolsista', 'value': 'BOLSISTA'},
         {'label': 'Ano de Titulação', 'value': 'ANO TITULACAO'},
         {'label': 'Publicações Científicas', 'value': 'PUBLICAÇÕES CIENTÍFICAS'},
-        # {'label': 'Orientações Concluídas de TCC na UPE', 'value': 'ORIENTAÇÕES CONC. TCC'},
-        #{'label': 'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE', 'value': 'ORIENTACOES CONC. ESPECIALIZACAO'}
+        {'label': 'Orientações Concluídas de TCC na UPE', 'value': 'ORIENTAÇÕES CONC. TCC'},
+        {'label': 'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE', 'value': 'ORIENTACOES CONC. ESPECIALIZACAO'}
 
 ]
 

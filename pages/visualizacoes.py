@@ -156,7 +156,12 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
                      "coorientacoes": {"concluido": ["C.O MESTRADO CONC."], "andamento": ["C.O MESTRADO AND."]}},
         "doutorado": {"orientacoes": {"concluido": ["O.P DOUTORADO CONC."], "andamento": ["O.P DOUTORADO AND."]},
                       "coorientacoes": {"concluido": ["C.O DOUTORADO CONC."], "andamento": ["C.O DOUTORADO AND."]}},
-        "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []}, "coorientacoes": {"concluido": [], "andamento": []}}
+        "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []}, "coorientacoes": {"concluido": [], "andamento": []}},
+        "tcc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+               "coorientacoes": {"concluido": [], "andamento": []}},
+        "tcc-conc": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. TCC"], "andamento": []},
+               "coorientacoes": {"concluido": [], "andamento": []}}
+
     }
 
     tipos_a_mostrar = list(colunas_map.keys()) if tipo == "todos" else [tipo]
@@ -174,7 +179,8 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
             "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
             "O.P DOUTORADO CONC.", "O.P DOUTORADO AND.",
             "C.O DOUTORADO CONC.", "C.O DOUTORADO AND.",
-            "ORIENTAÇÕES I.C"
+            "ORIENTAÇÕES I.C", "ORIENTACOES CONC. ESPECIALIZACAO",
+            "ORIENTAÇÕES CONC. TCC"
         ]
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
@@ -485,7 +491,10 @@ def mostrar_filtros_orientacoes(selected_viz):
         html.Div([html.Label("Tipo:", style={'fontWeight': 'bold'}), dcc.Dropdown(
             id="filtro-tipo-orientacoes",
             options=[{"label": "IC", "value": "ic"}, {"label": "Mestrado", "value": "mestrado"},
-                     {"label": "Doutorado", "value": "doutorado"}, {"label": "Todos", "value": "todos"}], value="todos",
+                     {"label": "Doutorado", "value": "doutorado"}, {"label": "Todos", "value": "todos"},
+                     {"label": "TCC Concluído", "value": "tcc-conc"}, {"label": "TCC especialização", "value": "tcc-esp"},],
+            value="todos",
+
             clearable=False
         )], style={"display": "inline-block", "marginRight": "10px", 'width': '150px'}),
         html.Div([html.Label("Natureza:", style={'fontWeight': 'bold'}), dcc.Dropdown(

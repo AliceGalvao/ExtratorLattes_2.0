@@ -71,6 +71,8 @@ layout = html.Div([
                             {'label': 'Mestrado', 'value': 'mestrado'},
                             {'label': 'Doutorado', 'value': 'doutorado'},
                             {'label': 'IC', 'value': 'ic'},
+                            {'label': 'TCC concluída', 'value': 'tcc-conc'},
+                            {'label': 'TCC especialização', 'value': 'tcc-esp'},
                         ],
                         id='filtro-orientacao-3',
                         inline=False,
@@ -249,6 +251,10 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
                     metricas_para_leitor.append('O.P DOUTORADO CONC.')
                 if o3 and 'ic' in o3:
                     metricas_para_leitor.append('ORIENTAÇÕES I.C')
+                if o3 and  'tcc-conc' in o3:
+                    metricas_para_leitor.append('ORIENTAÇÕES CONC. TCC')
+                if o3 and 'tcc-esp' in o3:
+                    metricas_para_leitor.append('ORIENTACOES CONC. ESPECIALIZACAO')
             if o2 and 'andamento' in o2:
                 if o3 and 'mestrado' in o3:
                     metricas_para_leitor.append('O.P MESTRADO AND.')
@@ -358,7 +364,7 @@ def alternar_marcar_tudo(n_clicks, orientacao_1_valores):
         return (
             ['coorientacao', 'orientacao'],
             ['concluido', 'andamento'],
-            ['mestrado', 'doutorado', 'ic'],
+            ['mestrado', 'doutorado', 'ic', 'tcc-conc', 'tcc-esp'],
             ['patente', 'software'],
             ['livros', 'capitulos', 'tecnica', 'eventos', 'cientificas'],
             ['eventos_organizados']
