@@ -80,6 +80,14 @@ class Leitor:
         orientacoes_ic_andamento = leitor_xml.extrair_orientacao_ic(
             IC_ANDAMENTO, DETALHAMENTO_IC_ANDAMENTO, DADOS_IC_ANDAMENTO, False
         )
+        orientacoes_tcc_concluidas = leitor_xml.extrair_outras_orientacoes(OUTRAS_ORIENTACOES_CONCLUIDAS,
+                                                                           DETALHAMENTO_DE_OUTRAS_ORIENTACOES_CONCLUIDAS,
+                                                                           DADOS_BASICOS_DE_OUTRAS_ORIENTACOES_CONCLUIDAS,
+                                                                           [NATUREZA_TCC], True)
+        orientacoes_tcc_tcr_especializao_concluidas = leitor_xml.extrair_outras_orientacoes(
+            OUTRAS_ORIENTACOES_CONCLUIDAS, DETALHAMENTO_DE_OUTRAS_ORIENTACOES_CONCLUIDAS,
+            DADOS_BASICOS_DE_OUTRAS_ORIENTACOES_CONCLUIDAS, [NATUREZA_TCC_TCR_ESPECIALIZACAO], True)
+
         tecnicos_artisticos_nao_indexados = leitor_xml.extrair_tecnico_artistico(
             ARTIGO_PUBLICADO, DADOS_BASICOS_DO_ARTIGO, DETALHAMENTO_DO_ARTIGO
         )
@@ -117,6 +125,8 @@ class Leitor:
         pesquisador.projetos_pesquisa = projetos_pesquisa
         pesquisador.projetos_desenvolvimento = projetos_desenvolvimento
         pesquisador.softwares = softwares
+        pesquisador.orientacoes_tcc = orientacoes_tcc_concluidas
+        pesquisador.orientacoes_tcc_tcr_especializacao = orientacoes_tcc_tcr_especializao_concluidas
 
         return pesquisador
 

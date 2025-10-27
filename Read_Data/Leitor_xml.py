@@ -101,6 +101,32 @@ class Leitor_xml:
 
         return orientacoes
 
+    def extrair_outras_orientacoes(self, child, f1, f2, naturezas, concluido):
+
+        orientacoes = list()
+
+        for child in self.root.iter(child):
+
+            dados = child.find(f2)
+            natureza = dados.get(NATUREZA)
+            detalhamento = child.find(f1)
+
+            if (natureza in naturezas):
+
+                titulo = dados.get(TITULO)
+                nome_instituicao = detalhamento.get(NOME_INSTITUICAO)
+                cods_instituicao = detalhamento.get(CODIGO_INSTITUICAO)
+                curso = detalhamento.get(CURSO)
+                ano = dados.get(ANO)
+
+                if self._filtro_ano(ano):
+                    continue
+
+                orientacoes.append(
+                    Orientacao.Orientacao(titulo, concluido, natureza, None, cods_instituicao, nome_instituicao, curso,
+                                          ano))
+
+        return orientacoes
 
     def extrair_orientacao_ic(self, child, f1, f2, concluido):
 
