@@ -156,12 +156,12 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
                      "coorientacoes": {"concluido": ["C.O MESTRADO CONC."], "andamento": ["C.O MESTRADO AND."]}},
         "doutorado": {"orientacoes": {"concluido": ["O.P DOUTORADO CONC."], "andamento": ["O.P DOUTORADO AND."]},
                       "coorientacoes": {"concluido": ["C.O DOUTORADO CONC."], "andamento": ["C.O DOUTORADO AND."]}},
-        "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []}, "coorientacoes": {"concluido": [], "andamento": []}},
-        "conc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+        "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []},
                "coorientacoes": {"concluido": [], "andamento": []}},
+        "conc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+                     "coorientacoes": {"concluido": [], "andamento": []}},
         "tcc-conc": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. TCC"], "andamento": []},
-               "coorientacoes": {"concluido": [], "andamento": []}}
-
+                     "coorientacoes": {"concluido": [], "andamento": []}}
     }
 
     tipos_a_mostrar = list(colunas_map.keys()) if tipo == "todos" else [tipo]
@@ -185,7 +185,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
 
-        for index, row in df_total.iterrows():
+        for _, row in df_total.iterrows():
             professor = row['Nome']
             for t in tipos_a_mostrar:
                 if natureza == "soma":
@@ -227,25 +227,34 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
     for t in tipos_a_mostrar:
         df_t = df_plot[df_plot["Tipo"] == t]
         if df_t.empty:
-            return []
-        else:
-            fig = px.bar(
-                df_t,
-                x="Identificador",
-                y="Valor",
-                color="Status",
-                barmode="stack",
-                title=t.upper(),
-                text_auto=True
-            )
-            fig.update_traces(textposition='inside')
-            fig.update_layout(
-                template="plotly_white",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True),
-                yaxis=dict(title=None),
-                margin=dict(l=20, r=20, t=65, b=60)
-            )
+            continue
+
+        ordem = (
+            df_t.groupby("Identificador")["Valor"]
+            .sum()
+            .sort_values(ascending=False)
+            .index
+            .tolist()
+        )
+
+        fig = px.bar(
+            df_t,
+            x="Identificador",
+            y="Valor",
+            color="Status",
+            barmode="stack",
+            title=t.upper(),
+            text_auto=True
+        )
+        fig.update_traces(textposition='inside')
+        fig.update_layout(
+            template="plotly_white",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            xaxis=dict(title=None, tickangle=-45, automargin=True,
+                       categoryorder="array", categoryarray=ordem),
+            yaxis=dict(title=None),
+            margin=dict(l=20, r=20, t=65, b=60)
+        )
 
         largura, altura = ajustar_tamanho_grafico(df_t, altura_min=350)
         graficos.append(
@@ -290,11 +299,14 @@ def gerar_graficos_registros(dfs, modo):
     for col in metricas_registros:
         if col in df_total.columns:
             df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]})
+            df_melt = df_melt.sort_values("Quantidade", ascending=False)
+
             fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
             fig.update_traces(textposition='inside')
             fig.update_layout(
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True),
+                xaxis=dict(title=None, tickangle=-45, automargin=True,
+                           categoryorder="array", categoryarray=df_melt["X"]),
                 yaxis=dict(title=None),
                 margin=dict(l=20, r=20, t=40, b=60)
             )
@@ -317,35 +329,27 @@ def gerar_graficos_registros(dfs, modo):
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
+
 def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
     metricas_eventos = ['EVENTOS ORGANIZADOS', 'PUB. TRAB. EVENTOS']
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TEC. E ART.']
     todas_metricas = metricas_eventos + metricas_publicacoes
     graficos = []
 
-    #  usa so o df de professores
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty:
             return []
-
-        # remove possiveis linhas de totais
         if 'Nome' in df_total.columns:
             df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
-
-        # agrega pra garantir que um professor não apareça duplicado
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
-
-    # mostra apenas o total geral
     elif modo == 'geral':
         df_total = dfs.get("total", pd.DataFrame()).copy()
         if df_total.empty:
             return []
         df_total['X'] = "Total"
-
-    # mostra o total por grupo
     elif modo == 'grupo':
         df_plot_list = []
         for nome, df in dfs.items():
@@ -356,7 +360,6 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
         if not df_plot_list:
             return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
-
     else:
         return [html.Div("Modo inválido.")]
 
@@ -365,13 +368,15 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
             df_plot = df_total[["X", col]].copy()
             df_plot = df_plot.groupby("X", as_index=False)[col].sum()
             df_plot.rename(columns={col: "Quantidade"}, inplace=True)
+            df_plot = df_plot.sort_values("Quantidade", ascending=False)
 
             fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
                          template="plotly_white", text_auto=True)
             fig.update_traces(textposition='inside')
             fig.update_layout(
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True),
+                xaxis=dict(title=None, tickangle=-45, automargin=True,
+                           categoryorder="array", categoryarray=df_plot["X"]),
                 yaxis=dict(title=None),
                 margin=dict(l=20, r=20, t=40, b=60)
             )
@@ -394,7 +399,7 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
-# Esse callback que eu criei é o novo callback para guardar o modo atual
+
 @callback(
     Output('store-modo-atual', 'data'),
     Input('btn-geral', 'n_clicks'),
