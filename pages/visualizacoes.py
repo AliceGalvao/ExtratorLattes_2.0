@@ -88,9 +88,9 @@ layout = html.Div([
 
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-registros-container", 
-                 children=[html.Div(id="wrapper-filtro-registros", 
-                                    style={'display': 'none'}, 
+        html.Div(id="filtros-registros-container",
+                 children=[html.Div(id="wrapper-filtro-registros",
+                                    style={'display': 'none'},
                                     children=[
                                         html.Div([
                                         html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
@@ -170,7 +170,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty:
-            return [html.Div("Nenhum dado disponível.")]
+            return []
         if 'Nome' in df_total.columns:
             df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
 
@@ -227,8 +227,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
     for t in tipos_a_mostrar:
         df_t = df_plot[df_plot["Tipo"] == t]
         if df_t.empty:
-            fig = px.bar(title=f"{t.upper()} - Sem dados")
-            fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
+            return []
         else:
             fig = px.bar(
                 df_t,
@@ -328,7 +327,7 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty:
-            return [html.Div("Nenhum dado disponível.")]
+            return []
 
         # remove possiveis linhas de totais
         if 'Nome' in df_total.columns:
@@ -343,7 +342,7 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
     elif modo == 'geral':
         df_total = dfs.get("total", pd.DataFrame()).copy()
         if df_total.empty:
-            return [html.Div("Nenhum dado disponível.")]
+            return []
         df_total['X'] = "Total"
 
     # mostra o total por grupo
@@ -643,7 +642,20 @@ def download_excel(n_clicks, stored_data):
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     excel_io = generate_excel({k: df.to_json(orient='split') for k, df in dfs.items()})
     return dcc.send_bytes(excel_io.getvalue(), "dados_extrator_lattes.xlsx")
-    
+
+mapa_professores = {}
+
+def anonimizar_nomes(df, coluna_nome='Nome'):
+    global mapa_professores
+    if coluna_nome not in df.columns:
+        return df.copy()
+    df_anon = df.copy()
+    for nome in df[coluna_nome].dropna().unique():
+        if nome not in mapa_professores:
+            mapa_professores[nome] = f"p{len(mapa_professores) + 1}"
+    df_anon[coluna_nome] = df[coluna_nome].map(mapa_professores)
+    return df_anon
+
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
     if modo == 'geral':
         df_total = dfs.get('total', pd.DataFrame())
@@ -666,6 +678,7 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         for k in grupos_para_usar:
             df = dfs[k]
             df_filtrado = df.iloc[:-1].copy()  # remove linha de total
+            df_filtrado = anonimizar_nomes(df_filtrado)
             df_filtrado['Grupo/Programa'] = k
             lista_dfs_professores.append(df_filtrado)
 
