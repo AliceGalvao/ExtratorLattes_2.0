@@ -105,11 +105,10 @@ layout = html.Div([
                     html.H4("Publicações"),
                     dcc.Checklist(
                         options=[
-                            {'label': 'Livros com ISBN', 'value': 'livros'},
-                            {'label': 'Capítulos com ISBN', 'value': 'capitulos'},
-                            {'label': 'Técnica ou Artística', 'value': 'tecnica'},
-                            {'label': 'Trabalho em Eventos', 'value': 'eventos'},
-                            {'label': 'Científicas', 'value': 'cientificas'},
+                            {'label': 'De Livros com ISBN', 'value': 'livros'},
+                            {'label': 'De Capítulos com ISBN', 'value': 'capitulos'},
+                            {'label': 'De Trabalhos em Eventos', 'value': 'eventos'},
+                            {'label': 'Em Revistas ou Periódicos', 'value': 'cientificas'},
                         ],
                         id='filtro-publicacoes',
                         inline=False,
@@ -123,6 +122,7 @@ layout = html.Div([
                     dcc.Checklist(
                         options=[
                             {'label': 'Eventos Organizados', 'value': 'eventos_organizados'},
+                            {'label': 'Produções Técnicas ou Artísticas', 'value': 'tecnica'},
                         ],
                         id='filtro-outros',
                         inline=False,
@@ -284,8 +284,6 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
                 metricas_para_leitor.append('LIVROS ISBN')
             if 'capitulos' in publicacoes:
                 metricas_para_leitor.append('CAPÍTULOS ISBN')
-            if 'tecnica' in publicacoes:
-                metricas_para_leitor.append('PUB. TEC. E ART.')
             if 'eventos' in publicacoes:
                 metricas_para_leitor.append('PUB. TRAB. EVENTOS')
             if 'cientificas' in publicacoes:
@@ -294,6 +292,8 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         if outros:
             if 'eventos_organizados' in outros:
                 metricas_para_leitor.append('EVENTOS ORGANIZADOS')
+            if 'tecnica' in publicacoes:
+                metricas_para_leitor.append('PUB. TEC. E ART.')
 
 
         metricas_para_leitor = list(set(metricas_para_leitor))
@@ -366,6 +366,6 @@ def alternar_marcar_tudo(n_clicks, orientacao_1_valores):
             ['concluido', 'andamento'],
             ['mestrado', 'doutorado', 'ic', 'tcc-conc', 'conc-esp'],
             ['patente', 'software'],
-            ['livros', 'capitulos', 'tecnica', 'eventos', 'cientificas'],
-            ['eventos_organizados']
+            ['livros', 'capitulos', 'eventos', 'cientificas'],
+            ['eventos_organizados','tecnica']
         )

@@ -45,9 +45,10 @@ layout = html.Div([
                 options=[
                     {'label': 'Registros', 'value': 'registros'},
                     {'label': 'Orientações', 'value': 'orientacoes'},
-                    {'label': 'Eventos e Publicações', 'value': 'eventos_publicacoes'}
+                    {'label': 'Publicações', 'value': 'publicacoes'},
+                    {'label': 'Outros', 'value': 'outros'}
                 ],
-                value=['registros', 'orientacoes', 'eventos_publicacoes'],
+                value=['registros', 'orientacoes', 'publicacoes', 'outros'],
                 style={'display': 'flex', 'gap': '30px', 'flexWrap': 'wrap', 'fontSize': '14px'}
             )
         ], style={'width': '45%', 'padding': '10px'}),
@@ -112,20 +113,47 @@ layout = html.Div([
               "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
               "width": "95%", "maxWidth": "1500px"}),
 
-    html.Div(id="section-eventos", children=[
-        html.H3("Eventos e Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-eventos-container",
+    html.Div(id="section-publicacoes", children=[
+        html.H3("Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
+        html.Div(id="filtros-publicacoes-container",
                  children =[
-                    html.Div(id="wrapper-filtro-eventos",
+                    html.Div(id="wrapper-filtro-publicacoes",
                             style = {'display': 'none'},
                             children=[
                                 html.Div([
                                 html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
-                                dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Selecione o grupo")
+                                dcc.Dropdown(id="filtro-grupo-publicacoes", options=[], clearable=True, placeholder="Selecione o grupo")
                                 ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
                             ])
                      ]),
-        html.Div(id="container-graficos-eventos", style={
+        html.Div(id="container-graficos-publicacoes", style={
+            'display': 'flex',
+            'flexDirection': 'row',
+            'flexWrap': 'nowrap',
+            'overflowX': 'auto',
+            'padding': '10px',
+            'gap': '15px',
+            'width': '100%',
+            'height': '450px'
+        })
+    ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9",
+              "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
+              "width": "95%", "maxWidth": "1500px"}),
+
+    html.Div(id="section-outros", children=[
+        html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
+        html.Div(id="filtros-outros-container",
+                 children =[
+                    html.Div(id="wrapper-filtro-outros",
+                            style = {'display': 'none'},
+                            children=[
+                                html.Div([
+                                html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
+                                dcc.Dropdown(id="filtro-grupo-outros", options=[], clearable=True, placeholder="Selecione o grupo")
+                                ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
+                            ])
+                     ]),
+        html.Div(id="container-graficos-outros", style={
             'display': 'flex',
             'flexDirection': 'row',
             'flexWrap': 'nowrap',
@@ -330,10 +358,67 @@ def gerar_graficos_registros(dfs, modo):
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 
-def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
-    metricas_eventos = ['EVENTOS ORGANIZADOS', 'PUB. TRAB. EVENTOS']
-    metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TEC. E ART.']
-    todas_metricas = metricas_eventos + metricas_publicacoes
+def gerar_graficos_publicacoes(dfs, modo, grupo_selecionado=None):
+    metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
+    graficos = []
+    df_plot_list = []
+
+    for nome, df in dfs.items():
+        if modo == 'geral' and nome == 'total':
+            df_tmp = df.copy()
+            df_tmp['X'] = 'Total'
+            df_plot_list.append(df_tmp)
+        elif modo == 'grupo' and nome != 'total':
+            df_tmp = df.iloc[[-1]].copy()
+            df_tmp['X'] = nome
+            df_plot_list.append(df_tmp)
+        elif modo == 'professor' and nome != 'total':
+            df_tmp = df.copy()
+            df_tmp['X'] = df_tmp.get('Nome', df_tmp.columns[0])
+            df_plot_list.append(df_tmp)
+
+    if not df_plot_list:
+        return [html.Div("Nenhum dado disponível.")]
+
+    df_total = pd.concat(df_plot_list, ignore_index=True)
+
+    for col in metricas_publicacoes:
+        if col in df_total.columns:
+            df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]})
+            df_melt = df_melt.sort_values("Quantidade", ascending=False)
+
+            fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
+            fig.update_traces(textposition='inside')
+            fig.update_layout(
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                xaxis=dict(title=None, tickangle=-45, automargin=True,
+                           categoryorder="array", categoryarray=df_melt["X"]),
+                yaxis=dict(title=None),
+                margin=dict(l=20, r=20, t=40, b=60)
+            )
+        else:
+            fig = px.bar(title=f"{col} - Sem dados")
+            fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
+
+        largura, altura = ajustar_tamanho_grafico(df_total, altura_min=350)
+        graficos.append(
+            html.Div(
+                dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                style={'flex': '0 0 auto',
+                       'backgroundColor': 'white',
+                       'borderRadius': '12px',
+                       'padding': '15px',
+                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}
+            )
+        )
+
+    return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
+                                     'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
+
+
+def gerar_graficos_outros(dfs, modo, grupo_selecionado=None):
+    metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
+    todas_metricas = metricas_outros
     graficos = []
 
     if modo == 'professor':
@@ -400,6 +485,7 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 
+
 @callback(
     Output('store-modo-atual', 'data'),
     Input('btn-geral', 'n_clicks'),
@@ -420,7 +506,8 @@ def guardar_modo_atual(btn_geral, btn_grupo, btn_professor):
     Output('filtro-natureza-orientacoes', 'value'),
     Output('filtro-grupo-orientacoes', 'value'),
     Output('filtro-grupo-registros', 'value'),
-    Output('filtro-grupo-eventos', 'value'),
+    Output('filtro-grupo-publicacoes', 'value'),
+    Output('filtro-grupo-outros', 'value'),
     Input('store-modo-atual', 'data'),  # Gatilho: A mudança na memória
     prevent_initial_call=True
 )
@@ -465,19 +552,34 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, st
 
 
 @callback(
-    Output("container-graficos-eventos", "children"),
+    Output("container-graficos-publicacoes", "children"),
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),  # Gatilho principal
-    Input("filtro-grupo-eventos", "value"),  # Gatilho secundário
+    Input("filtro-grupo-publicacoes", "value"),  # Gatilho secundário
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_eventos(selected_viz, modo_atual, grupo_selecionado, stored_data):
-    if not stored_data or "eventos_publicacoes" not in selected_viz:
+def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, stored_data):
+    if not stored_data or "publicacoes" not in selected_viz:
         return []
     modo = modo_atual if modo_atual else 'geral'
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_eventos_publicacoes(dfs_filtrados, modo)
+    return gerar_graficos_publicacoes(dfs_filtrados, modo)
+
+@callback(
+    Output("container-graficos-outros", "children"),
+    Input("checklist-viz", "value"),
+    Input('store-modo-atual', 'data'),  # Gatilho principal
+    Input("filtro-grupo-outros", "value"),  # Gatilho secundário
+    State("store-lista-dfs", "data")
+)
+def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, stored_data):
+    if not stored_data or "outros" not in selected_viz:
+        return []
+    modo = modo_atual if modo_atual else 'geral'
+    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    return gerar_graficos_outros(dfs_filtrados, modo)
 
 @callback(
     Output("filtros-orientacoes-container", "children"),
@@ -521,12 +623,12 @@ def mostrar_filtros_orientacoes(selected_viz):
 
 
 @callback(
-    Output("wrapper-filtro-eventos", "style"),
+    Output("wrapper-filtro-publicacoes", "style"),
     Input("btn-professor", "n_clicks"),
     Input("btn-geral", "n_clicks"),
     Input("btn-grupo", "n_clicks")
 )
-def mostrar_ocultar_filtro_grupo_eventos(btn_professor, btn_geral, btn_grupo):
+def mostrar_ocultar_filtro_grupo_publicacoes(btn_professor, btn_geral, btn_grupo):
     ctx = callback_context
     if not ctx.triggered: return {'display': 'none'}
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -535,6 +637,20 @@ def mostrar_ocultar_filtro_grupo_eventos(btn_professor, btn_geral, btn_grupo):
     else:
         return {'display': 'none'}
 
+@callback(
+    Output("wrapper-filtro-outros", "style"),
+    Input("btn-professor", "n_clicks"),
+    Input("btn-geral", "n_clicks"),
+    Input("btn-grupo", "n_clicks")
+)
+def mostrar_ocultar_filtro_grupo_outros(btn_professor, btn_geral, btn_grupo):
+    ctx = callback_context
+    if not ctx.triggered: return {'display': 'none'}
+    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if btn_id == 'btn-professor':
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
 
 @callback(
     Output("wrapper-filtro-orientacoes", "style"),
@@ -569,9 +685,10 @@ def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
 
 
 @callback(
-    Output("filtro-grupo-eventos", "options"),
+    Output("filtro-grupo-publicacoes", "options"),
     Output("filtro-grupo-orientacoes", "options"),
     Output("filtro-grupo-registros", "options"),
+    Output("filtro-grupo-outros", "options"),
     Input("store-lista-dfs", "data")
 )
 def popular_opcoes_de_grupo(stored_data):
@@ -611,7 +728,8 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
 @callback(
     Output("section-orientacoes", "style"),
     Output("section-registros", "style"),
-    Output("section-eventos", "style"),
+    Output("section-publicacoes", "style"),
+    Output("section-outros", "style"),
     Input("checklist-viz", "value")
 )
 def toggle_sections(selected_viz):
@@ -621,10 +739,13 @@ def toggle_sections(selected_viz):
     style_registros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
                        "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
                        "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
-    style_eventos = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+    style_publicacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
                      "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                     "maxWidth": "1400px"} if "eventos_publicacoes" in selected_viz else {"display": "none"}
-    return style_orientacoes, style_registros, style_eventos
+                     "maxWidth": "1400px"} if "publicacoes" in selected_viz else {"display": "none"},
+    style_outros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+                     "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                     "maxWidth": "1400px"} if "outros" in selected_viz else {"display": "none"}
+    return style_orientacoes, style_registros, style_publicacoes, style_outros
 
 def generate_excel(data):
     output = io.BytesIO()
