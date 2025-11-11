@@ -46,7 +46,7 @@ layout = html.Div([
                     {'label': 'Registros', 'value': 'registros'},
                     {'label': 'Orientações', 'value': 'orientacoes'},
                     {'label': 'Publicações', 'value': 'publicacoes'},
-                    {'label': 'Outros', 'value': 'outros'}
+                    {'label': 'Outros', 'value': 'outros'},
                 ],
                 value=['registros', 'orientacoes', 'publicacoes', 'outros'],
                 style={'display': 'flex', 'gap': '30px', 'flexWrap': 'wrap', 'fontSize': '14px'}
@@ -141,31 +141,31 @@ layout = html.Div([
               "width": "95%", "maxWidth": "1500px"}),
 
     html.Div(id="section-outros", children=[
-        html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-outros-container",
-                 children =[
-                    html.Div(id="wrapper-filtro-outros",
-                            style = {'display': 'none'},
-                            children=[
-                                html.Div([
-                                html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
-                                dcc.Dropdown(id="filtro-grupo-outros", options=[], clearable=True, placeholder="Selecione o grupo")
-                                ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
-                            ])
-                     ]),
-        html.Div(id="container-graficos-outros", style={
-            'display': 'flex',
-            'flexDirection': 'row',
-            'flexWrap': 'nowrap',
-            'overflowX': 'auto',
-            'padding': '10px',
-            'gap': '15px',
-            'width': '100%',
-            'height': '450px'
-        })
-    ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9",
-              "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-              "width": "95%", "maxWidth": "1500px"}),
+            html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
+            html.Div(id="filtros-outros-container",
+                     children =[
+                        html.Div(id="wrapper-filtro-outros",
+                                style = {'display': 'none'},
+                                children=[
+                                    html.Div([
+                                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
+                                    dcc.Dropdown(id="filtro-grupo-outros", options=[], clearable=True, placeholder="Selecione o grupo")
+                                    ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
+                                ])
+                         ]),
+            html.Div(id="container-graficos-outros", style={
+                'display': 'flex',
+                'flexDirection': 'row',
+                'flexWrap': 'nowrap',
+                'overflowX': 'auto',
+                'padding': '10px',
+                'gap': '15px',
+                'width': '100%',
+                'height': '450px'
+            })
+        ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9",
+                  "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
+                  "width": "95%", "maxWidth": "1500px"}),
 
     dcc.Download(id="download-dataframe-xlsx"),
     dcc.Store(id='store-modo-atual')
@@ -358,41 +358,55 @@ def gerar_graficos_registros(dfs, modo):
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 
-def gerar_graficos_publicacoes(dfs, modo, grupo_selecionado=None):
+def gerar_graficos_publicacoes(dfs, modo):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
+    todas_metricas = metricas_publicacoes
     graficos = []
-    df_plot_list = []
 
-    for nome, df in dfs.items():
-        if modo == 'geral' and nome == 'total':
-            df_tmp = df.copy()
-            df_tmp['X'] = 'Total'
-            df_plot_list.append(df_tmp)
-        elif modo == 'grupo' and nome != 'total':
-            df_tmp = df.iloc[[-1]].copy()
-            df_tmp['X'] = nome
-            df_plot_list.append(df_tmp)
-        elif modo == 'professor' and nome != 'total':
-            df_tmp = df.copy()
-            df_tmp['X'] = df_tmp.get('Nome', df_tmp.columns[0])
-            df_plot_list.append(df_tmp)
+    # 🔹 Seleção do dataframe base conforme o modo
+    if modo == 'professor':
+        df_total = dfs.get("professores", pd.DataFrame()).copy()
+        if df_total.empty:
+            return []
+        if 'Nome' in df_total.columns:
+            df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
+        cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
+        df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
+        df_total['X'] = df_total['Nome']
+    elif modo == 'geral':
+        df_total = dfs.get("total", pd.DataFrame()).copy()
+        if df_total.empty:
+            return []
+        df_total['X'] = "Total"
+    elif modo == 'grupo':
+        df_plot_list = []
+        for nome, df in dfs.items():
+            if nome != "total":
+                df_tmp = df.copy()
+                df_tmp['X'] = nome
+                df_plot_list.append(df_tmp)
+        if not df_plot_list:
+            return [html.Div("Nenhum dado disponível.")]
+        df_total = pd.concat(df_plot_list, ignore_index=True)
+    else:
+        return [html.Div("Modo inválido.")]
 
-    if not df_plot_list:
-        return [html.Div("Nenhum dado disponível.")]
+    for col in todas_metricas:
+        if any(col in df.columns for df in dfs.values()):
+            # cria dataframe da métrica, mesmo que alguns grupos não tenham a coluna
+            df_plot = df_total[['X']].copy()
+            df_plot[col] = df_total[col] if col in df_total.columns else 0
+            df_plot = df_plot.groupby("X", as_index=False)[col].sum()
+            df_plot.rename(columns={col: "Quantidade"}, inplace=True)
+            df_plot = df_plot.sort_values("Quantidade", ascending=False)
 
-    df_total = pd.concat(df_plot_list, ignore_index=True)
-
-    for col in metricas_publicacoes:
-        if col in df_total.columns:
-            df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]})
-            df_melt = df_melt.sort_values("Quantidade", ascending=False)
-
-            fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
+            fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
+                         template="plotly_white", text_auto=True)
             fig.update_traces(textposition='inside')
             fig.update_layout(
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 xaxis=dict(title=None, tickangle=-45, automargin=True,
-                           categoryorder="array", categoryarray=df_melt["X"]),
+                           categoryorder="array", categoryarray=df_plot["X"]),
                 yaxis=dict(title=None),
                 margin=dict(l=20, r=20, t=40, b=60)
             )
@@ -400,7 +414,7 @@ def gerar_graficos_publicacoes(dfs, modo, grupo_selecionado=None):
             fig = px.bar(title=f"{col} - Sem dados")
             fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
 
-        largura, altura = ajustar_tamanho_grafico(df_total, altura_min=350)
+        largura, altura = ajustar_tamanho_grafico(df_total)
         graficos.append(
             html.Div(
                 dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
@@ -408,17 +422,15 @@ def gerar_graficos_publicacoes(dfs, modo, grupo_selecionado=None):
                        'backgroundColor': 'white',
                        'borderRadius': '12px',
                        'padding': '15px',
-                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}
-            )
+                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
         )
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
-
-def gerar_graficos_outros(dfs, modo, grupo_selecionado=None):
-    metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
-    todas_metricas = metricas_outros
+def gerar_graficos_outros(dfs, modo):
+    metricas = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
+    todas_metricas = metricas
     graficos = []
 
     if modo == 'professor':
@@ -449,8 +461,9 @@ def gerar_graficos_outros(dfs, modo, grupo_selecionado=None):
         return [html.Div("Modo inválido.")]
 
     for col in todas_metricas:
-        if col in df_total.columns:
-            df_plot = df_total[["X", col]].copy()
+        if any(col in df.columns for df in dfs.values()):
+            df_plot = df_total[['X']].copy()
+            df_plot[col] = df_total[col] if col in df_total.columns else 0
             df_plot = df_plot.groupby("X", as_index=False)[col].sum()
             df_plot.rename(columns={col: "Quantidade"}, inplace=True)
             df_plot = df_plot.sort_values("Quantidade", ascending=False)
@@ -477,13 +490,11 @@ def gerar_graficos_outros(dfs, modo, grupo_selecionado=None):
                        'backgroundColor': 'white',
                        'borderRadius': '12px',
                        'padding': '15px',
-                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}
-            )
+                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
         )
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-
 
 
 @callback(
@@ -686,17 +697,18 @@ def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
 
 @callback(
     Output("filtro-grupo-publicacoes", "options"),
+    Output("filtro-grupo-outros", "options"),
     Output("filtro-grupo-orientacoes", "options"),
     Output("filtro-grupo-registros", "options"),
-    Output("filtro-grupo-outros", "options"),
     Input("store-lista-dfs", "data")
 )
 def popular_opcoes_de_grupo(stored_data):
     if not stored_data:
-        return [], [], []
+        return [], [], [], []
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
-    return grupos, grupos, grupos
+    # Retorna 4 outputs sempre (ordem: publicacoes, outros, orientacoes, registros)
+    return grupos, grupos, grupos, grupos
 
 
 @callback(
@@ -733,18 +745,19 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
     Input("checklist-viz", "value")
 )
 def toggle_sections(selected_viz):
+
     style_orientacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
                          "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
                          "maxWidth": "1400px"} if "orientacoes" in selected_viz else {"display": "none"}
     style_registros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                       "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                       "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
+                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                         "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
     style_publicacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                     "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                     "maxWidth": "1400px"} if "publicacoes" in selected_viz else {"display": "none"},
+                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                         "maxWidth": "1400px"} if "publicacoes" in selected_viz else {"display": "none"}
     style_outros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                     "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                     "maxWidth": "1400px"} if "outros" in selected_viz else {"display": "none"}
+                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                         "maxWidth": "1400px"} if "outros" in selected_viz else {"display": "none"}
     return style_orientacoes, style_registros, style_publicacoes, style_outros
 
 def generate_excel(data):
@@ -783,34 +796,62 @@ def anonimizar_nomes(df, coluna_nome='Nome'):
     return df_anon
 
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
+    if not dfs or not isinstance(dfs, dict):
+        return {"total": pd.DataFrame()}
+
+    # MODO GERAL -> pega apenas 'total' (última linha do total)
     if modo == 'geral':
         df_total = dfs.get('total', pd.DataFrame())
         if not df_total.empty:
+            # se existir coluna Nome e linhas TOTAL, pega a última linha de total; senão pega última
+            if 'Nome' in df_total.columns and df_total['Nome'].astype(str).str.upper().str.contains("TOTAL").any():
+                return {'total': df_total[df_total['Nome'].astype(str).str.upper().str.contains("TOTAL")].iloc[[-1]]}
             return {'total': df_total.iloc[[-1]]}
         return {'total': pd.DataFrame()}
 
+    # MODO GRUPO -> pega a linha de total de cada grupo (ou última linha)
     elif modo == 'grupo':
         dfs_grupos = {}
-        for k, df in dfs.items():
-            if k != 'total':
-                dfs_grupos[k] = df.iloc[[-1]]
+        for nome, df in dfs.items():
+            if nome == 'total':
+                continue
+            if df.empty:
+                continue
+            if 'Nome' in df.columns and df['Nome'].astype(str).str.upper().str.contains("TOTAL").any():
+                linha_total = df[df['Nome'].astype(str).str.upper().str.contains("TOTAL")].iloc[[-1]].copy()
+            else:
+                linha_total = df.iloc[[-1]].copy()
+            dfs_grupos[nome] = linha_total
         return dfs_grupos
 
+    # MODO PROFESSOR -> junta professores (filtra por grupo se passado)
     elif modo == 'professor':
-        # se um grupo foi selecionado usa só esse grupo # nao esta funcionando
-        lista_dfs_professores = []
-        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
+        grupos_para_usar = [grupo_selecionado] if (grupo_selecionado and grupo_selecionado in dfs) else [k for k in dfs if k != "total"]
+        lista = []
+        for g in grupos_para_usar:
+            df = dfs.get(g, pd.DataFrame()).copy()
+            if df.empty:
+                continue
+            # remove linhas 'TOTAL' caso existam
+            if 'Nome' in df.columns:
+                df = df[~df['Nome'].astype(str).str.upper().str.contains("TOTAL")]
+            if df.empty:
+                continue
+            df = anonimizar_nomes(df)
+            df['Grupo/Programa'] = g
+            lista.append(df)
+        if not lista:
+            return {'professores': pd.DataFrame()}
+        df_final = pd.concat(lista, ignore_index=True)
 
-        for k in grupos_para_usar:
-            df = dfs[k]
-            df_filtrado = df.iloc[:-1].copy()  # remove linha de total
-            df_filtrado = anonimizar_nomes(df_filtrado)
-            df_filtrado['Grupo/Programa'] = k
-            lista_dfs_professores.append(df_filtrado)
-
-        if lista_dfs_professores:
-            df_final = pd.concat(lista_dfs_professores, ignore_index=True)
-            return {'professores': df_final}
-        return {'professores': pd.DataFrame()}
+        # garante que colunas que existam em qualquer df estejam presentes (preenche com 0)
+        col_union = set()
+        for d in dfs.values():
+            if isinstance(d, pd.DataFrame):
+                col_union.update(d.columns.tolist())
+        for c in col_union:
+            if c not in df_final.columns:
+                df_final[c] = 0
+        return {'professores': df_final}
 
     return dfs
