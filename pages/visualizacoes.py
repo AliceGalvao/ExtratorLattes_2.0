@@ -2,10 +2,12 @@ import io
 import dash
 from dash import html, dcc, Input, Output, State, callback, callback_context
 import pandas as pd
+import io
 import plotly.express as px
 from dash.exceptions import PreventUpdate
 
 dash.register_page(__name__, path='/visualizacoes', name="Visualizações")
+import json
 
 layout = html.Div([
 
@@ -296,6 +298,9 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
             )
         )
 
+    if not graficos:
+        return []
+
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
@@ -325,22 +330,22 @@ def gerar_graficos_registros(dfs, modo):
     df_total = pd.concat(df_plot_list, ignore_index=True)
 
     for col in metricas_registros:
-        if col in df_total.columns:
-            df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]})
-            df_melt = df_melt.sort_values("Quantidade", ascending=False)
+        # pular métricas que não existem nos dados (evita mostrar 'Sem dados')
+        if col not in df_total.columns:
+            continue
 
-            fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
-            fig.update_traces(textposition='inside')
-            fig.update_layout(
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True,
-                           categoryorder="array", categoryarray=df_melt["X"]),
-                yaxis=dict(title=None),
-                margin=dict(l=20, r=20, t=40, b=60)
-            )
-        else:
-            fig = px.bar(title=f"{col} - Sem dados")
-            fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
+        df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]})
+        df_melt = df_melt.sort_values("Quantidade", ascending=False)
+
+        fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
+        fig.update_traces(textposition='inside')
+        fig.update_layout(
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            xaxis=dict(title=None, tickangle=-45, automargin=True,
+                       categoryorder="array", categoryarray=df_melt["X"]),
+            yaxis=dict(title=None),
+            margin=dict(l=20, r=20, t=40, b=60)
+        )
 
         largura, altura = ajustar_tamanho_grafico(df_total, altura_min=350)
         graficos.append(
@@ -356,6 +361,7 @@ def gerar_graficos_registros(dfs, modo):
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
+
 
 
 def gerar_graficos_publicacoes(dfs, modo):
@@ -391,27 +397,26 @@ def gerar_graficos_publicacoes(dfs, modo):
         return [html.Div("Modo inválido.")]
 
     for col in todas_metricas:
-        if any(col in df.columns for df in dfs.values()):
+        # pular métricas que não existem nos dados (evita mostrar 'Sem dados')
+        if not any(col in df.columns for df in dfs.values()):
+            continue
 
-            df_plot = df_total[['X']].copy()
-            df_plot[col] = df_total[col] if col in df_total.columns else 0
-            df_plot = df_plot.groupby("X", as_index=False)[col].sum()
-            df_plot.rename(columns={col: "Quantidade"}, inplace=True)
-            df_plot = df_plot.sort_values("Quantidade", ascending=False)
+        df_plot = df_total[['X']].copy()
+        df_plot[col] = df_total[col] if col in df_total.columns else 0
+        df_plot = df_plot.groupby("X", as_index=False)[col].sum()
+        df_plot.rename(columns={col: "Quantidade"}, inplace=True)
+        df_plot = df_plot.sort_values("Quantidade", ascending=False)
 
-            fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
-                         template="plotly_white", text_auto=True)
-            fig.update_traces(textposition='inside')
-            fig.update_layout(
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True,
-                           categoryorder="array", categoryarray=df_plot["X"]),
-                yaxis=dict(title=None),
-                margin=dict(l=20, r=20, t=40, b=60)
-            )
-        else:
-            fig = px.bar(title=f"{col} - Sem dados")
-            fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
+        fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
+                     template="plotly_white", text_auto=True)
+        fig.update_traces(textposition='inside')
+        fig.update_layout(
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            xaxis=dict(title=None, tickangle=-45, automargin=True,
+                       categoryorder="array", categoryarray=df_plot["X"]),
+            yaxis=dict(title=None),
+            margin=dict(l=20, r=20, t=40, b=60)
+        )
 
         largura, altura = ajustar_tamanho_grafico(df_total)
         graficos.append(
@@ -423,6 +428,9 @@ def gerar_graficos_publicacoes(dfs, modo):
                        'padding': '15px',
                        'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
         )
+
+    if not graficos:
+        return []
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
@@ -460,26 +468,26 @@ def gerar_graficos_outros(dfs, modo):
         return [html.Div("Modo inválido.")]
 
     for col in todas_metricas:
-        if any(col in df.columns for df in dfs.values()):
-            df_plot = df_total[['X']].copy()
-            df_plot[col] = df_total[col] if col in df_total.columns else 0
-            df_plot = df_plot.groupby("X", as_index=False)[col].sum()
-            df_plot.rename(columns={col: "Quantidade"}, inplace=True)
-            df_plot = df_plot.sort_values("Quantidade", ascending=False)
+        # pular métricas que não existem nos dados (evita mostrar 'Sem dados')
+        if not any(col in df.columns for df in dfs.values()):
+            continue
 
-            fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
-                         template="plotly_white", text_auto=True)
-            fig.update_traces(textposition='inside')
-            fig.update_layout(
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True,
-                           categoryorder="array", categoryarray=df_plot["X"]),
-                yaxis=dict(title=None),
-                margin=dict(l=20, r=20, t=40, b=60)
-            )
-        else:
-            fig = px.bar(title=f"{col} - Sem dados")
-            fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
+        df_plot = df_total[['X']].copy()
+        df_plot[col] = df_total[col] if col in df_total.columns else 0
+        df_plot = df_plot.groupby("X", as_index=False)[col].sum()
+        df_plot.rename(columns={col: "Quantidade"}, inplace=True)
+        df_plot = df_plot.sort_values("Quantidade", ascending=False)
+
+        fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
+                     template="plotly_white", text_auto=True)
+        fig.update_traces(textposition='inside')
+        fig.update_layout(
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            xaxis=dict(title=None, tickangle=-45, automargin=True,
+                       categoryorder="array", categoryarray=df_plot["X"]),
+            yaxis=dict(title=None),
+            margin=dict(l=20, r=20, t=40, b=60)
+        )
 
         largura, altura = ajustar_tamanho_grafico(df_total)
         graficos.append(
@@ -491,6 +499,9 @@ def gerar_graficos_outros(dfs, modo):
                        'padding': '15px',
                        'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
         )
+
+    if not graficos:
+        return []
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
@@ -540,7 +551,7 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual,
         return []
 
     modo = modo_atual if modo_atual else 'geral'
-    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
     return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo)
 
@@ -556,7 +567,7 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, st
     if not stored_data or "registros" not in selected_viz:
         return []
     modo = modo_atual if modo_atual else 'geral'
-    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
     return gerar_graficos_registros(dfs_filtrados, modo)
 
@@ -572,7 +583,7 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
     if not stored_data or "publicacoes" not in selected_viz:
         return []
     modo = modo_atual if modo_atual else 'geral'
-    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
     return gerar_graficos_publicacoes(dfs_filtrados, modo)
 
@@ -587,7 +598,7 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, store
     if not stored_data or "outros" not in selected_viz:
         return []
     modo = modo_atual if modo_atual else 'geral'
-    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
     return gerar_graficos_outros(dfs_filtrados, modo)
 
@@ -704,10 +715,69 @@ def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
 def popular_opcoes_de_grupo(stored_data):
     if not stored_data:
         return [], [], [], []
-    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs, metricas = parse_stored_data(stored_data)
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
     # Retorna 4 outputs sempre (ordem: publicacoes, outros, orientacoes, registros)
     return grupos, grupos, grupos, grupos
+
+
+@callback(
+    Output('checklist-viz', 'options'),
+    Output('checklist-viz', 'value'),
+    Input('store-lista-dfs', 'data'),
+    State('checklist-viz', 'value')
+)
+def atualizar_checklist_viz_por_metricas(stored_data, current_value):
+    """Desabilita itens do checklist de visualizações quando não houver métricas correspondentes.
+    Também remove valores desabilitados do `value` para manter consistência.
+    """
+    default_options = [
+        {'label': 'Registros', 'value': 'registros'},
+        {'label': 'Orientações', 'value': 'orientacoes'},
+        {'label': 'Publicações', 'value': 'publicacoes'},
+        {'label': 'Outros', 'value': 'outros'},
+    ]
+
+    # sem dados armazenados, mantém opções padrão e valor atual
+    if not stored_data:
+        # se value for None (render inicial), retorna todos selecionados
+        if not current_value:
+            return default_options, [opt['value'] for opt in default_options]
+        return default_options, current_value
+
+    dfs, metricas = parse_stored_data(stored_data)
+
+    # detecta presença por categoria com base nas métricas explícitas
+    orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
+    registros_present = any(m in metricas for m in ["PATENTES", "REGISTROS DE SW"]) 
+    publicacoes_present = any(m in metricas for m in ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS'])
+    outros_present = any(m in metricas for m in ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
+
+    options_all = [
+        {'label': 'Registros', 'value': 'registros'},
+        {'label': 'Orientações', 'value': 'orientacoes'},
+        {'label': 'Publicações', 'value': 'publicacoes'},
+        {'label': 'Outros', 'value': 'outros'},
+    ]
+
+    # filtra apenas as opções que têm métricas correspondentes (oculta as demais)
+    options = []
+    if registros_present:
+        options.append(options_all[0])
+    if orientacoes_present:
+        options.append(options_all[1])
+    if publicacoes_present:
+        options.append(options_all[2])
+    if outros_present:
+        options.append(options_all[3])
+
+    # ajusta value removendo itens que foram ocultados
+    if not current_value:
+        new_value = [opt['value'] for opt in options]
+    else:
+        new_value = [v for v in current_value if any(o['value'] == v for o in options)]
+
+    return options, new_value
 
 
 @callback(
@@ -741,30 +811,55 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
     Output("section-registros", "style"),
     Output("section-publicacoes", "style"),
     Output("section-outros", "style"),
-    Input("checklist-viz", "value")
+    Input("checklist-viz", "value"),
+    Input("store-lista-dfs", "data")
 )
-def toggle_sections(selected_viz):
+def toggle_sections(selected_viz, stored_data):
 
-    style_orientacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                         "maxWidth": "1400px"} if "orientacoes" in selected_viz else {"display": "none"}
-    style_registros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                         "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
-    style_publicacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                         "maxWidth": "1400px"} if "publicacoes" in selected_viz else {"display": "none"}
-    style_outros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                         "maxWidth": "1400px"} if "outros" in selected_viz else {"display": "none"}
+    # comportamento padrão baseado apenas no checklist (quando não há dados armazenados)
+    default_style = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+                     "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1400px"}
+    hidden = {"display": "none"}
+
+    # se não há dados armazenados, usa apenas o checklist
+    if not stored_data:
+        style_orientacoes = default_style if "orientacoes" in selected_viz else hidden
+        style_registros = default_style if "registros" in selected_viz else hidden
+        style_publicacoes = default_style if "publicacoes" in selected_viz else hidden
+        style_outros = default_style if "outros" in selected_viz else hidden
+        return style_orientacoes, style_registros, style_publicacoes, style_outros
+
+    # usa as métricas explícitas gravadas em _meta (mais confiável que inspecionar colunas)
+    dfs, metricas = parse_stored_data(stored_data)
+
+    orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
+    registros_present = any(m in metricas for m in ["PATENTES", "REGISTROS DE SW"])
+    publicacoes_present = any(m in metricas for m in ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS'])
+    outros_present = any(m in metricas for m in ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
+
+    style_orientacoes = default_style if ("orientacoes" in selected_viz and orientacoes_present) else hidden
+    style_registros = default_style if ("registros" in selected_viz and registros_present) else hidden
+    style_publicacoes = default_style if ("publicacoes" in selected_viz and publicacoes_present) else hidden
+    style_outros = default_style if ("outros" in selected_viz and outros_present) else hidden
+
     return style_orientacoes, style_registros, style_publicacoes, style_outros
 
 def generate_excel(data):
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        wrote_any = False
         for sheet_name, json_data in data.items():
             df = pd.read_json(io.StringIO(json_data), orient='split')
-            df.to_excel(writer, sheet_name=sheet_name, index=False)
+            # só escreve abas que contenham métricas além de 'Nome' e 'ID LATTES'
+            metric_cols = [c for c in df.columns if c not in ['Nome', 'ID LATTES']]
+            if metric_cols:
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+                wrote_any = True
+
+        if not wrote_any:
+            # cria uma aba resumo indicando que não há métricas selecionadas
+            resumo = pd.DataFrame({"Info": ["Nenhuma métrica selecionada ou dados disponíveis para exportar."]})
+            resumo.to_excel(writer, sheet_name='Resumo', index=False)
     output.seek(0)
     return output
 
@@ -777,7 +872,7 @@ def generate_excel(data):
 def download_excel(n_clicks, stored_data):
     if not stored_data:
         raise PreventUpdate
-    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs, metricas = parse_stored_data(stored_data)
     excel_io = generate_excel({k: df.to_json(orient='split') for k, df in dfs.items()})
     return dcc.send_bytes(excel_io.getvalue(), "dados_extrator_lattes.xlsx")
 
@@ -826,3 +921,42 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         return {'professores': pd.DataFrame()}
 
     return dfs
+
+
+def parse_stored_data(stored_data):
+    """Retorna um dict de DataFrames e a lista de métricas selecionadas (meta) do stored_data.
+    stored_data pode ter valores JSON (string) ou já dicts; também pode conter a chave '_meta'.
+    """
+    dfs = {}
+    metricas = []
+    if not stored_data:
+        return dfs, metricas
+
+    for k, v in stored_data.items():
+        if k == '_meta':
+            # meta pode ser um dict ou string JSON
+            if isinstance(v, dict):
+                metricas = v.get('metricas', [])
+            else:
+                try:
+                    meta = json.loads(v)
+                    metricas = meta.get('metricas', [])
+                except Exception:
+                    metricas = []
+            continue
+
+        try:
+            if isinstance(v, str):
+                df = pd.read_json(io.StringIO(v), orient='split')
+            elif isinstance(v, dict):
+                # caso o valor já seja uma estrutura serializada (fallback)
+                df = pd.DataFrame(v)
+            else:
+                # tentativa de carregar diretamente
+                df = pd.read_json(io.StringIO(str(v)), orient='split')
+            dfs[k] = df
+        except Exception:
+            # ignora entradas que não são DataFrames
+            continue
+
+    return dfs, metricas

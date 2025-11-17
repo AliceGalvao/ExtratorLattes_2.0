@@ -206,7 +206,7 @@ layout = html.Div([
 
 @callback(
     Output('output-message', 'children', allow_duplicate=True),
-    Output('store-lista-dfs', 'data'),
+    Output('store-lista-dfs', 'data', allow_duplicate=True),
     Output('error-modal', 'is_open', allow_duplicate=True),
     Output('modal-error-message', 'children', allow_duplicate=True),
     Input('btn-extrair', 'n_clicks'),
@@ -305,18 +305,40 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         logger.info(f"[.] Métricas finais: {metricas_para_leitor}")
         leitor = Leitor()
         lista_dfs = leitor.gerar_estrutura_de_csv_programas(ano_inicio=ano_inicio, ano_termino=ano_termino,
-                                                            metricas=metricas_para_leitor)
+                                    metricas=metricas_para_leitor)
         logger.info(f"Dados para armazenar no store (tipo {type(lista_dfs)}): {lista_dfs}")
         try:
             logger.info(f"Como JSON string? {json.dumps(lista_dfs)[:500]}")  # primeiros 500 chars
         except Exception as e:
             logger.error(f"Erro convertendo dados para JSON: {e}")
 
-        return "", lista_dfs, False, ""
+        # Adiciona metadados explícitos com as métricas selecionadas para o front-end
+        dict_para_store = lista_dfs.copy() if isinstance(lista_dfs, dict) else {}
+        dict_para_store['_meta'] = {'metricas': metricas_para_leitor}
+
+        return "", dict_para_store, False, ""
 
     except Exception as e:
         logger.error(f"[X] Erro ao gerar resultados: {str(e)}\n{traceback.format_exc()}")
         return no_update, no_update, True, f"Erro durante a extração: {e}"
+
+
+# Limpa os dados armazenados quando o usuário altera os filtros (para evitar usar dados antigos sem reextração)
+@callback(
+    Output('store-lista-dfs', 'data', allow_duplicate=True),
+    Input('filtro-orientacao-1', 'value'),
+    Input('filtro-orientacao-2', 'value'),
+    Input('filtro-orientacao-3', 'value'),
+    Input('filtro-registro', 'value'),
+    Input('filtro-publicacoes', 'value'),
+    Input('filtro-outros', 'value'),
+    prevent_initial_call=True
+)
+def limpar_dados_ao_mudar_filtros(o1, o2, o3, registro, publicacoes, outros):
+    # Em vez de retornar None, gravamos um _meta com lista vazia de métricas.
+    # Isso permite que a interface saiba explicitamente que não há métricas selecionadas
+    # e o frontend pode ocultar as seções/checkboxes correspondentes.
+    return {'_meta': {'metricas': []}}
 
 
 @callback(
@@ -325,9 +347,42 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
     prevent_initial_call=True
 )
 def redirecionar_apos_processamento(store_data):
-    if store_data:
-        logger.info("Redirecionando automaticamente para /visualizacoes após processamento.")
-        return "/visualizacoes"
+    # Só redireciona quando houver resultados reais para visualizar.
+    # Evita redirecionamento quando o store contém apenas um _meta vazio.
+    if not store_data:
+        raise PreventUpdate
+
+    try:
+        # Se for dict, verificar se existe ao menos uma chave além de '_meta'
+        if isinstance(store_data, dict):
+            other_keys = [k for k in store_data.keys() if k != '_meta']
+            # se existirem outras chaves e pelo menos uma delas tiver conteúdo, redireciona
+            for k in other_keys:
+                v = store_data.get(k)
+                if v:
+                    logger.info("Redirecionando automaticamente para /visualizacoes após processamento.")
+                    return "/visualizacoes"
+
+            # por fim, checar se _meta possui métricas não vazias
+            meta = store_data.get('_meta')
+            metricas = []
+            if isinstance(meta, dict):
+                metricas = meta.get('metricas', []) or []
+            elif isinstance(meta, str):
+                try:
+                    import json as _json
+                    metricas = _json.loads(meta).get('metricas', []) or []
+                except Exception:
+                    metricas = []
+
+            if metricas:
+                logger.info("Redirecionando automaticamente para /visualizacoes após processamento (métricas presentes).")
+                return "/visualizacoes"
+
+    except Exception as e:
+        logger.warning(f"Erro ao avaliar dados de store para redirecionamento: {e}")
+
+    # Se chegou aqui, não há dados úteis para visualizar — não redireciona.
     raise PreventUpdate
 
 
