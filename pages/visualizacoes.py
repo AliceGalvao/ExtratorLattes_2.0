@@ -363,7 +363,6 @@ def gerar_graficos_publicacoes(dfs, modo):
     todas_metricas = metricas_publicacoes
     graficos = []
 
-    # 🔹 Seleção do dataframe base conforme o modo
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty:
@@ -393,7 +392,7 @@ def gerar_graficos_publicacoes(dfs, modo):
 
     for col in todas_metricas:
         if any(col in df.columns for df in dfs.values()):
-            # cria dataframe da métrica, mesmo que alguns grupos não tenham a coluna
+
             df_plot = df_total[['X']].copy()
             df_plot[col] = df_total[col] if col in df_total.columns else 0
             df_plot = df_plot.groupby("X", as_index=False)[col].sum()
@@ -519,7 +518,7 @@ def guardar_modo_atual(btn_geral, btn_grupo, btn_professor):
     Output('filtro-grupo-registros', 'value'),
     Output('filtro-grupo-publicacoes', 'value'),
     Output('filtro-grupo-outros', 'value'),
-    Input('store-modo-atual', 'data'),  # Gatilho: A mudança na memória
+    Input('store-modo-atual', 'data'),
     prevent_initial_call=True
 )
 def resetar_filtros_ao_mudar_modo(modo_selecionado):
@@ -528,8 +527,8 @@ def resetar_filtros_ao_mudar_modo(modo_selecionado):
 @callback(
     Output("container-graficos", "children"),
     Input("checklist-viz", "value"),
-    Input('store-modo-atual', 'data'),  # Gatilho principal
-    Input("filtro-status-orientacoes", "value"),  # Gatilhos secundários
+    Input('store-modo-atual', 'data'),
+    Input("filtro-status-orientacoes", "value"),
     Input("filtro-tipo-orientacoes", "value"),
     Input("filtro-natureza-orientacoes", "value"),
     Input("filtro-grupo-orientacoes", "value"),
@@ -791,67 +790,39 @@ def anonimizar_nomes(df, coluna_nome='Nome'):
     df_anon = df.copy()
     for nome in df[coluna_nome].dropna().unique():
         if nome not in mapa_professores:
-            mapa_professores[nome] = f"p{len(mapa_professores) + 1}"
+            mapa_professores[nome] = f"P{len(mapa_professores) + 1}"
     df_anon[coluna_nome] = df[coluna_nome].map(mapa_professores)
     return df_anon
 
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
-    if not dfs or not isinstance(dfs, dict):
-        return {"total": pd.DataFrame()}
-
-    # MODO GERAL -> pega apenas 'total' (última linha do total)
     if modo == 'geral':
         df_total = dfs.get('total', pd.DataFrame())
         if not df_total.empty:
-            # se existir coluna Nome e linhas TOTAL, pega a última linha de total; senão pega última
-            if 'Nome' in df_total.columns and df_total['Nome'].astype(str).str.upper().str.contains("TOTAL").any():
-                return {'total': df_total[df_total['Nome'].astype(str).str.upper().str.contains("TOTAL")].iloc[[-1]]}
             return {'total': df_total.iloc[[-1]]}
         return {'total': pd.DataFrame()}
 
-    # MODO GRUPO -> pega a linha de total de cada grupo (ou última linha)
     elif modo == 'grupo':
         dfs_grupos = {}
-        for nome, df in dfs.items():
-            if nome == 'total':
-                continue
-            if df.empty:
-                continue
-            if 'Nome' in df.columns and df['Nome'].astype(str).str.upper().str.contains("TOTAL").any():
-                linha_total = df[df['Nome'].astype(str).str.upper().str.contains("TOTAL")].iloc[[-1]].copy()
-            else:
-                linha_total = df.iloc[[-1]].copy()
-            dfs_grupos[nome] = linha_total
+        for k, df in dfs.items():
+            if k != 'total':
+                dfs_grupos[k] = df.iloc[[-1]]
         return dfs_grupos
 
-    # MODO PROFESSOR -> junta professores (filtra por grupo se passado)
     elif modo == 'professor':
-        grupos_para_usar = [grupo_selecionado] if (grupo_selecionado and grupo_selecionado in dfs) else [k for k in dfs if k != "total"]
-        lista = []
-        for g in grupos_para_usar:
-            df = dfs.get(g, pd.DataFrame()).copy()
-            if df.empty:
-                continue
-            # remove linhas 'TOTAL' caso existam
-            if 'Nome' in df.columns:
-                df = df[~df['Nome'].astype(str).str.upper().str.contains("TOTAL")]
-            if df.empty:
-                continue
-            df = anonimizar_nomes(df)
-            df['Grupo/Programa'] = g
-            lista.append(df)
-        if not lista:
-            return {'professores': pd.DataFrame()}
-        df_final = pd.concat(lista, ignore_index=True)
+        # se um grupo foi selecionado usa só esse grupo # nao esta funcionando
+        lista_dfs_professores = []
+        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
 
-        # garante que colunas que existam em qualquer df estejam presentes (preenche com 0)
-        col_union = set()
-        for d in dfs.values():
-            if isinstance(d, pd.DataFrame):
-                col_union.update(d.columns.tolist())
-        for c in col_union:
-            if c not in df_final.columns:
-                df_final[c] = 0
-        return {'professores': df_final}
+        for k in grupos_para_usar:
+            df = dfs[k]
+            df_filtrado = df.iloc[:-1].copy()  # remove linha de total
+            df_filtrado = anonimizar_nomes(df_filtrado)
+            df_filtrado['Grupo/Programa'] = k
+            lista_dfs_professores.append(df_filtrado)
+
+        if lista_dfs_professores:
+            df_final = pd.concat(lista_dfs_professores, ignore_index=True)
+            return {'professores': df_final}
+        return {'professores': pd.DataFrame()}
 
     return dfs

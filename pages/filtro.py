@@ -124,7 +124,7 @@ layout = html.Div([
                     dcc.Checklist(
                         options=[
                             {'label': 'Eventos Organizados', 'value': 'eventos_organizados'},
-                            {'label': 'Produções Técnica ou Artística', 'value': 'tecnica'},
+                            {'label': 'Produções Técnicas ou Artísticas', 'value': 'tecnica'},
                         ],
                         id='filtro-outros',
                         inline=False,
@@ -225,9 +225,6 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
                         o1, o2, o3, registro, publicacoes, outros):
     logger.info("[.] Processando resultados com base nas seleções da página de filtros")
 
-    # O objetivo dessa verificação é impedir atualizações sem que seja pressionado o botao de extrair.
-    # Quando o navegador inicializa a tela, ela muda o n_clicks de None para 0 e isso provocava o modal de erro aparecer
-    # Fazer essa verificação, impede que essa mudança seja gatilho de comportamentos não desejados
     if n_clicks is None or n_clicks < 1:
         raise PreventUpdate
 
@@ -298,7 +295,7 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         if outros:
             if 'eventos_organizados' in outros:
                 metricas_para_leitor.append('EVENTOS ORGANIZADOS')
-            if 'tecnica' in publicacoes:
+            if 'tecnica' in outros:
                 metricas_para_leitor.append('PUB. TEC. E ART.')
 
         metricas_para_leitor = list(set(metricas_para_leitor))
