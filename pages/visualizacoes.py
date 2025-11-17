@@ -180,7 +180,7 @@ def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=65, altura_por_b
     altura = max(min(n_barras * altura_por_barra, altura_max), altura_min)
     return f"{largura}px", f"{altura}px"
 
-def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
+def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None):
     colunas_map = {
         "mestrado": {"orientacoes": {"concluido": ["O.P MESTRADO CONC."], "andamento": ["O.P MESTRADO AND."]},
                      "coorientacoes": {"concluido": ["C.O MESTRADO CONC."], "andamento": ["C.O MESTRADO AND."]}},
@@ -212,6 +212,9 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
             "ORIENTAÇÕES I.C", "ORIENTACOES CONC. ESPECIALIZACAO",
             "ORIENTAÇÕES CONC. TCC"
         ]
+        # Respeitar apenas as métricas selecionadas, se fornecidas
+        if metricas:
+            todas_metricas = [c for c in todas_metricas if c in metricas]
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
 
@@ -242,6 +245,11 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
                 else:
                     cols_conc = colunas_map[t][natureza]["concluido"]
                     cols_and = colunas_map[t][natureza]["andamento"]
+
+                # se metricas fornecidas, pular se colunas não foram selecionadas
+                if metricas is not None:
+                    cols_conc = [c for c in cols_conc if c in metricas]
+                    cols_and = [c for c in cols_and if c in metricas]
 
                 val_conc = df[cols_conc].sum(axis=1).sum() if cols_conc and all(c in df.columns for c in cols_conc) else 0
                 val_and = df[cols_and].sum(axis=1).sum() if cols_and and all(c in df.columns for c in cols_and) else 0
@@ -305,7 +313,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 
-def gerar_graficos_registros(dfs, modo):
+def gerar_graficos_registros(dfs, modo, metricas=None):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
     graficos = []
     df_plot_list = []
@@ -328,6 +336,10 @@ def gerar_graficos_registros(dfs, modo):
         return [html.Div("Nenhum dado disponível.")]
 
     df_total = pd.concat(df_plot_list, ignore_index=True)
+
+    # Respeitar apenas métricas selecionadas
+    if metricas is not None:
+        metricas_registros = [c for c in metricas_registros if c in metricas]
 
     for col in metricas_registros:
         # pular métricas que não existem nos dados (evita mostrar 'Sem dados')
@@ -364,7 +376,7 @@ def gerar_graficos_registros(dfs, modo):
 
 
 
-def gerar_graficos_publicacoes(dfs, modo):
+def gerar_graficos_publicacoes(dfs, modo, metricas=None):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
     todas_metricas = metricas_publicacoes
     graficos = []
@@ -395,6 +407,10 @@ def gerar_graficos_publicacoes(dfs, modo):
         df_total = pd.concat(df_plot_list, ignore_index=True)
     else:
         return [html.Div("Modo inválido.")]
+
+    # Respeitar apenas métricas selecionadas
+    if metricas is not None:
+        todas_metricas = [c for c in todas_metricas if c in metricas]
 
     for col in todas_metricas:
         # pular métricas que não existem nos dados (evita mostrar 'Sem dados')
@@ -435,7 +451,7 @@ def gerar_graficos_publicacoes(dfs, modo):
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
-def gerar_graficos_outros(dfs, modo):
+def gerar_graficos_outros(dfs, modo, metricas=None):
     metricas = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
     todas_metricas = metricas
     graficos = []
@@ -466,6 +482,10 @@ def gerar_graficos_outros(dfs, modo):
         df_total = pd.concat(df_plot_list, ignore_index=True)
     else:
         return [html.Div("Modo inválido.")]
+
+    # Respeitar apenas métricas selecionadas
+    if metricas is not None:
+        todas_metricas = [c for c in todas_metricas if c in metricas]
 
     for col in todas_metricas:
         # pular métricas que não existem nos dados (evita mostrar 'Sem dados')
@@ -553,7 +573,7 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual,
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo)
+    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas)
 
 
 @callback(
@@ -569,7 +589,7 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, st
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_registros(dfs_filtrados, modo)
+    return gerar_graficos_registros(dfs_filtrados, modo, metricas)
 
 
 @callback(
@@ -585,7 +605,7 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_publicacoes(dfs_filtrados, modo)
+    return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas)
 
 @callback(
     Output("container-graficos-outros", "children"),
@@ -600,7 +620,7 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, store
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_outros(dfs_filtrados, modo)
+    return gerar_graficos_outros(dfs_filtrados, modo, metricas)
 
 @callback(
     Output("filtros-orientacoes-container", "children"),
