@@ -99,37 +99,40 @@ layout = html.Div([
                         inputStyle={"margin-right": "10px"},
                         className="checklist-style"
                     )
-                ], style={'backgroundColor': '#D9D9D9', 'padding': '10px', 'marginBottom': '10px', 'border': '1px solid black', 'borderRadius': '5px'}),
+                ], style={'backgroundColor': '#D9D9D9', 'padding': '10px', 'marginBottom': '10px',
+                          'border': '1px solid black', 'borderRadius': '5px'}),
 
                 html.Div([
                     html.H4("Publicações"),
                     dcc.Checklist(
                         options=[
-                            {'label': 'Livros com ISBN', 'value': 'livros'},
-                            {'label': 'Capítulos com ISBN', 'value': 'capitulos'},
-                            {'label': 'Técnica ou Artística', 'value': 'tecnica'},
-                            {'label': 'Trabalho em Eventos', 'value': 'eventos'},
-                            {'label': 'Científicas', 'value': 'cientificas'},
+                            {'label': 'De Livros com ISBN', 'value': 'livros'},
+                            {'label': 'De Capítulos com ISBN', 'value': 'capitulos'},
+                            {'label': 'De Trabalhos em Eventos', 'value': 'eventos'},
+                            {'label': 'Em Revistas ou Periódicos', 'value': 'cientificas'},
                         ],
                         id='filtro-publicacoes',
                         inline=False,
                         inputStyle={"margin-right": "10px"},
                         className="checklist-style"
                     )
-                ], style={'backgroundColor': '#D9D9D9', 'padding': '10px', 'marginBottom': '10px', 'border': '1px solid black', 'borderRadius': '5px'}),
+                ], style={'backgroundColor': '#D9D9D9', 'padding': '10px', 'marginBottom': '10px',
+                          'border': '1px solid black', 'borderRadius': '5px'}),
 
                 html.Div([
                     html.H4("Outros"),
                     dcc.Checklist(
                         options=[
                             {'label': 'Eventos Organizados', 'value': 'eventos_organizados'},
+                            {'label': 'Produções Técnicas ou Artísticas', 'value': 'tecnica'},
                         ],
                         id='filtro-outros',
                         inline=False,
                         inputStyle={"margin-right": "10px"},
                         className="checklist-style"
                     )
-                ], style={'backgroundColor': '#D9D9D9', 'padding': '10px', 'border': '1px solid black', 'borderRadius': '5px'}),
+                ], style={'backgroundColor': '#D9D9D9', 'padding': '10px', 'border': '1px solid black',
+                          'borderRadius': '5px'}),
             ], style={'width': '30%', 'display': 'flex', 'flexDirection': 'column', 'justifyContent': 'space-between'}),
 
         ], style={
@@ -143,7 +146,8 @@ layout = html.Div([
         html.Div([
             html.Div("Ano de inicio:", style={'color': 'white', 'marginRight': '20px'}),
             dcc.Dropdown(
-                options=[{'label': int(year), 'value': year} for year in range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
+                options=[{'label': int(year), 'value': year} for year in
+                         range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
                 placeholder="Selecione um ano",
                 style={
                     'width': '200px',
@@ -155,7 +159,8 @@ layout = html.Div([
             ),
             html.Div("Ano de termino:", style={'color': 'white', 'marginRight': '20px'}),
             dcc.Dropdown(
-                options=[{'label': int(year), 'value': year} for year in range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
+                options=[{'label': int(year), 'value': year} for year in
+                         range((int(datetime.now().year) - 10), (int(datetime.now().year) + 1))],
                 placeholder="Selecione um ano",
                 style={
                     'width': '200px',
@@ -192,10 +197,12 @@ layout = html.Div([
             'justifyContent': 'center'
         }),
 
-        dcc.Loading(id='loading-output', type='default', children=html.Div(id='output-message'), fullscreen=True, style={'backgroundColor': 'rgba(0, 0, 0, 0.5)'}),
+        dcc.Loading(id='loading-output', type='default', children=html.Div(id='output-message'), fullscreen=True,
+                    style={'backgroundColor': 'rgba(0, 0, 0, 0.5)'}),
     ]),
     dcc.Location(id='redirect-div-after-process', refresh=True)
 ])
+
 
 @callback(
     Output('output-message', 'children', allow_duplicate=True),
@@ -218,12 +225,9 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
                         o1, o2, o3, registro, publicacoes, outros):
     logger.info("[.] Processando resultados com base nas seleções da página de filtros")
 
-    #O objetivo dessa verificação é impedir atualizações sem que seja pressionado o botao de extrair.
-    #Quando o navegador inicializa a tela, ela muda o n_clicks de None para 0 e isso provocava o modal de erro aparecer
-    #Fazer essa verificação, impede que essa mudança seja gatilho de comportamentos não desejados
-    if n_clicks is None or n_clicks < 1: 
+    if n_clicks is None or n_clicks < 1:
         raise PreventUpdate
-    
+
     if not uploaded_file_data_dict:
         return "", no_update, True, "Por favor, carregue um arquivo na tela inicial."
 
@@ -235,7 +239,6 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         arquivo_base = uploaded_file_data_dict.get('conteudo_base64')
         if not arquivo_base:
             return no_update, True, "Erro interno: conteúdo do arquivo ausente."
-
 
         conteudo_bytes = base64.b64decode(arquivo_base)
         storage_lattes = StorageLattes(arquivo_base=BytesIO(conteudo_bytes))
@@ -251,7 +254,7 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
                     metricas_para_leitor.append('O.P DOUTORADO CONC.')
                 if o3 and 'ic' in o3:
                     metricas_para_leitor.append('ORIENTAÇÕES I.C')
-                if o3 and  'tcc-conc' in o3:
+                if o3 and 'tcc-conc' in o3:
                     metricas_para_leitor.append('ORIENTAÇÕES CONC. TCC')
                 if o3 and 'conc-esp' in o3:
                     metricas_para_leitor.append('ORIENTACOES CONC. ESPECIALIZACAO')
@@ -284,8 +287,6 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
                 metricas_para_leitor.append('LIVROS ISBN')
             if 'capitulos' in publicacoes:
                 metricas_para_leitor.append('CAPÍTULOS ISBN')
-            if 'tecnica' in publicacoes:
-                metricas_para_leitor.append('PUB. TEC. E ART.')
             if 'eventos' in publicacoes:
                 metricas_para_leitor.append('PUB. TRAB. EVENTOS')
             if 'cientificas' in publicacoes:
@@ -294,7 +295,8 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         if outros:
             if 'eventos_organizados' in outros:
                 metricas_para_leitor.append('EVENTOS ORGANIZADOS')
-
+            if 'tecnica' in outros:
+                metricas_para_leitor.append('PUB. TEC. E ART.')
 
         metricas_para_leitor = list(set(metricas_para_leitor))
         if not metricas_para_leitor:
@@ -310,12 +312,12 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         except Exception as e:
             logger.error(f"Erro convertendo dados para JSON: {e}")
 
-
         return "", lista_dfs, False, ""
 
     except Exception as e:
         logger.error(f"[X] Erro ao gerar resultados: {str(e)}\n{traceback.format_exc()}")
         return no_update, no_update, True, f"Erro durante a extração: {e}"
+
 
 @callback(
     Output('redirect-div-after-process', 'pathname'),
@@ -328,6 +330,7 @@ def redirecionar_apos_processamento(store_data):
         return "/visualizacoes"
     raise PreventUpdate
 
+
 @callback(
     Output('store-redirecionamento-realizado', 'data', allow_duplicate=True),
     Input('url', 'pathname'),
@@ -338,6 +341,7 @@ def resetar_redirecionamento(pathname):
         logger.info("Redirecionamento resetado para /filters.")
         return False
     raise PreventUpdate
+
 
 @callback(
     Output('filtro-orientacao-1', 'value'),
@@ -366,6 +370,6 @@ def alternar_marcar_tudo(n_clicks, orientacao_1_valores):
             ['concluido', 'andamento'],
             ['mestrado', 'doutorado', 'ic', 'tcc-conc', 'conc-esp'],
             ['patente', 'software'],
-            ['livros', 'capitulos', 'tecnica', 'eventos', 'cientificas'],
-            ['eventos_organizados']
+            ['livros', 'capitulos', 'eventos', 'cientificas'],
+            ['eventos_organizados','tecnica']
         )

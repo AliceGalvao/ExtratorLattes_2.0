@@ -45,9 +45,10 @@ layout = html.Div([
                 options=[
                     {'label': 'Registros', 'value': 'registros'},
                     {'label': 'Orientações', 'value': 'orientacoes'},
-                    {'label': 'Eventos e Publicações', 'value': 'eventos_publicacoes'}
+                    {'label': 'Publicações', 'value': 'publicacoes'},
+                    {'label': 'Outros', 'value': 'outros'},
                 ],
-                value=['registros', 'orientacoes', 'eventos_publicacoes'],
+                value=['registros', 'orientacoes', 'publicacoes', 'outros'],
                 style={'display': 'flex', 'gap': '30px', 'flexWrap': 'wrap', 'fontSize': '14px'}
             )
         ], style={'width': '45%', 'padding': '10px'}),
@@ -88,9 +89,9 @@ layout = html.Div([
 
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-registros-container", 
-                 children=[html.Div(id="wrapper-filtro-registros", 
-                                    style={'display': 'none'}, 
+        html.Div(id="filtros-registros-container",
+                 children=[html.Div(id="wrapper-filtro-registros",
+                                    style={'display': 'none'},
                                     children=[
                                         html.Div([
                                         html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
@@ -112,20 +113,20 @@ layout = html.Div([
               "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
               "width": "95%", "maxWidth": "1500px"}),
 
-    html.Div(id="section-eventos", children=[
-        html.H3("Eventos e Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-eventos-container",
+    html.Div(id="section-publicacoes", children=[
+        html.H3("Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
+        html.Div(id="filtros-publicacoes-container",
                  children =[
-                    html.Div(id="wrapper-filtro-eventos",
+                    html.Div(id="wrapper-filtro-publicacoes",
                             style = {'display': 'none'},
                             children=[
                                 html.Div([
                                 html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
-                                dcc.Dropdown(id="filtro-grupo-eventos", options=[], clearable=True, placeholder="Selecione o grupo")
+                                dcc.Dropdown(id="filtro-grupo-publicacoes", options=[], clearable=True, placeholder="Selecione o grupo")
                                 ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
                             ])
                      ]),
-        html.Div(id="container-graficos-eventos", style={
+        html.Div(id="container-graficos-publicacoes", style={
             'display': 'flex',
             'flexDirection': 'row',
             'flexWrap': 'nowrap',
@@ -138,6 +139,33 @@ layout = html.Div([
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9",
               "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
               "width": "95%", "maxWidth": "1500px"}),
+
+    html.Div(id="section-outros", children=[
+            html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
+            html.Div(id="filtros-outros-container",
+                     children =[
+                        html.Div(id="wrapper-filtro-outros",
+                                style = {'display': 'none'},
+                                children=[
+                                    html.Div([
+                                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
+                                    dcc.Dropdown(id="filtro-grupo-outros", options=[], clearable=True, placeholder="Selecione o grupo")
+                                    ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
+                                ])
+                         ]),
+            html.Div(id="container-graficos-outros", style={
+                'display': 'flex',
+                'flexDirection': 'row',
+                'flexWrap': 'nowrap',
+                'overflowX': 'auto',
+                'padding': '10px',
+                'gap': '15px',
+                'width': '100%',
+                'height': '450px'
+            })
+        ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9",
+                  "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
+                  "width": "95%", "maxWidth": "1500px"}),
 
     dcc.Download(id="download-dataframe-xlsx"),
     dcc.Store(id='store-modo-atual')
@@ -156,12 +184,12 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
                      "coorientacoes": {"concluido": ["C.O MESTRADO CONC."], "andamento": ["C.O MESTRADO AND."]}},
         "doutorado": {"orientacoes": {"concluido": ["O.P DOUTORADO CONC."], "andamento": ["O.P DOUTORADO AND."]},
                       "coorientacoes": {"concluido": ["C.O DOUTORADO CONC."], "andamento": ["C.O DOUTORADO AND."]}},
-        "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []}, "coorientacoes": {"concluido": [], "andamento": []}},
-        "conc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+        "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []},
                "coorientacoes": {"concluido": [], "andamento": []}},
+        "conc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+                     "coorientacoes": {"concluido": [], "andamento": []}},
         "tcc-conc": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. TCC"], "andamento": []},
-               "coorientacoes": {"concluido": [], "andamento": []}}
-
+                     "coorientacoes": {"concluido": [], "andamento": []}}
     }
 
     tipos_a_mostrar = list(colunas_map.keys()) if tipo == "todos" else [tipo]
@@ -170,7 +198,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty:
-            return [html.Div("Nenhum dado disponível.")]
+            return []
         if 'Nome' in df_total.columns:
             df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
 
@@ -185,7 +213,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
 
-        for index, row in df_total.iterrows():
+        for _, row in df_total.iterrows():
             professor = row['Nome']
             for t in tipos_a_mostrar:
                 if natureza == "soma":
@@ -227,26 +255,34 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo):
     for t in tipos_a_mostrar:
         df_t = df_plot[df_plot["Tipo"] == t]
         if df_t.empty:
-            fig = px.bar(title=f"{t.upper()} - Sem dados")
-            fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
-        else:
-            fig = px.bar(
-                df_t,
-                x="Identificador",
-                y="Valor",
-                color="Status",
-                barmode="stack",
-                title=t.upper(),
-                text_auto=True
-            )
-            fig.update_traces(textposition='inside')
-            fig.update_layout(
-                template="plotly_white",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True),
-                yaxis=dict(title=None),
-                margin=dict(l=20, r=20, t=65, b=60)
-            )
+            continue
+
+        ordem = (
+            df_t.groupby("Identificador")["Valor"]
+            .sum()
+            .sort_values(ascending=False)
+            .index
+            .tolist()
+        )
+
+        fig = px.bar(
+            df_t,
+            x="Identificador",
+            y="Valor",
+            color="Status",
+            barmode="stack",
+            title=t.upper(),
+            text_auto=True
+        )
+        fig.update_traces(textposition='inside')
+        fig.update_layout(
+            template="plotly_white",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            xaxis=dict(title=None, tickangle=-45, automargin=True,
+                       categoryorder="array", categoryarray=ordem),
+            yaxis=dict(title=None),
+            margin=dict(l=20, r=20, t=65, b=60)
+        )
 
         largura, altura = ajustar_tamanho_grafico(df_t, altura_min=350)
         graficos.append(
@@ -291,11 +327,14 @@ def gerar_graficos_registros(dfs, modo):
     for col in metricas_registros:
         if col in df_total.columns:
             df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]})
+            df_melt = df_melt.sort_values("Quantidade", ascending=False)
+
             fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
             fig.update_traces(textposition='inside')
             fig.update_layout(
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True),
+                xaxis=dict(title=None, tickangle=-45, automargin=True,
+                           categoryorder="array", categoryarray=df_melt["X"]),
                 yaxis=dict(title=None),
                 margin=dict(l=20, r=20, t=40, b=60)
             )
@@ -318,35 +357,26 @@ def gerar_graficos_registros(dfs, modo):
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
-def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
-    metricas_eventos = ['EVENTOS ORGANIZADOS', 'PUB. TRAB. EVENTOS']
-    metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TEC. E ART.']
-    todas_metricas = metricas_eventos + metricas_publicacoes
+
+def gerar_graficos_publicacoes(dfs, modo):
+    metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
+    todas_metricas = metricas_publicacoes
     graficos = []
 
-    #  usa so o df de professores
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty:
-            return [html.Div("Nenhum dado disponível.")]
-
-        # remove possiveis linhas de totais
+            return []
         if 'Nome' in df_total.columns:
             df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
-
-        # agrega pra garantir que um professor não apareça duplicado
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
-
-    # mostra apenas o total geral
     elif modo == 'geral':
         df_total = dfs.get("total", pd.DataFrame()).copy()
         if df_total.empty:
-            return [html.Div("Nenhum dado disponível.")]
+            return []
         df_total['X'] = "Total"
-
-    # mostra o total por grupo
     elif modo == 'grupo':
         df_plot_list = []
         for nome, df in dfs.items():
@@ -357,22 +387,25 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
         if not df_plot_list:
             return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
-
     else:
         return [html.Div("Modo inválido.")]
 
     for col in todas_metricas:
-        if col in df_total.columns:
-            df_plot = df_total[["X", col]].copy()
+        if any(col in df.columns for df in dfs.values()):
+
+            df_plot = df_total[['X']].copy()
+            df_plot[col] = df_total[col] if col in df_total.columns else 0
             df_plot = df_plot.groupby("X", as_index=False)[col].sum()
             df_plot.rename(columns={col: "Quantidade"}, inplace=True)
+            df_plot = df_plot.sort_values("Quantidade", ascending=False)
 
             fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
                          template="plotly_white", text_auto=True)
             fig.update_traces(textposition='inside')
             fig.update_layout(
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                xaxis=dict(title=None, tickangle=-45, automargin=True),
+                xaxis=dict(title=None, tickangle=-45, automargin=True,
+                           categoryorder="array", categoryarray=df_plot["X"]),
                 yaxis=dict(title=None),
                 margin=dict(l=20, r=20, t=40, b=60)
             )
@@ -388,14 +421,81 @@ def gerar_graficos_eventos_publicacoes(dfs, modo, grupo_selecionado=None):
                        'backgroundColor': 'white',
                        'borderRadius': '12px',
                        'padding': '15px',
-                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}
-            )
+                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
         )
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
                                      'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
-# Esse callback que eu criei é o novo callback para guardar o modo atual
+def gerar_graficos_outros(dfs, modo):
+    metricas = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
+    todas_metricas = metricas
+    graficos = []
+
+    if modo == 'professor':
+        df_total = dfs.get("professores", pd.DataFrame()).copy()
+        if df_total.empty:
+            return []
+        if 'Nome' in df_total.columns:
+            df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
+        cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
+        df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
+        df_total['X'] = df_total['Nome']
+    elif modo == 'geral':
+        df_total = dfs.get("total", pd.DataFrame()).copy()
+        if df_total.empty:
+            return []
+        df_total['X'] = "Total"
+    elif modo == 'grupo':
+        df_plot_list = []
+        for nome, df in dfs.items():
+            if nome != "total":
+                df_tmp = df.copy()
+                df_tmp['X'] = nome
+                df_plot_list.append(df_tmp)
+        if not df_plot_list:
+            return [html.Div("Nenhum dado disponível.")]
+        df_total = pd.concat(df_plot_list, ignore_index=True)
+    else:
+        return [html.Div("Modo inválido.")]
+
+    for col in todas_metricas:
+        if any(col in df.columns for df in dfs.values()):
+            df_plot = df_total[['X']].copy()
+            df_plot[col] = df_total[col] if col in df_total.columns else 0
+            df_plot = df_plot.groupby("X", as_index=False)[col].sum()
+            df_plot.rename(columns={col: "Quantidade"}, inplace=True)
+            df_plot = df_plot.sort_values("Quantidade", ascending=False)
+
+            fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
+                         template="plotly_white", text_auto=True)
+            fig.update_traces(textposition='inside')
+            fig.update_layout(
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                xaxis=dict(title=None, tickangle=-45, automargin=True,
+                           categoryorder="array", categoryarray=df_plot["X"]),
+                yaxis=dict(title=None),
+                margin=dict(l=20, r=20, t=40, b=60)
+            )
+        else:
+            fig = px.bar(title=f"{col} - Sem dados")
+            fig.update_layout(yaxis={"visible": False}, xaxis={"visible": False})
+
+        largura, altura = ajustar_tamanho_grafico(df_total)
+        graficos.append(
+            html.Div(
+                dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                style={'flex': '0 0 auto',
+                       'backgroundColor': 'white',
+                       'borderRadius': '12px',
+                       'padding': '15px',
+                       'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
+        )
+
+    return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap',
+                                     'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
+
+
 @callback(
     Output('store-modo-atual', 'data'),
     Input('btn-geral', 'n_clicks'),
@@ -416,8 +516,9 @@ def guardar_modo_atual(btn_geral, btn_grupo, btn_professor):
     Output('filtro-natureza-orientacoes', 'value'),
     Output('filtro-grupo-orientacoes', 'value'),
     Output('filtro-grupo-registros', 'value'),
-    Output('filtro-grupo-eventos', 'value'),
-    Input('store-modo-atual', 'data'),  # Gatilho: A mudança na memória
+    Output('filtro-grupo-publicacoes', 'value'),
+    Output('filtro-grupo-outros', 'value'),
+    Input('store-modo-atual', 'data'),
     prevent_initial_call=True
 )
 def resetar_filtros_ao_mudar_modo(modo_selecionado):
@@ -426,8 +527,8 @@ def resetar_filtros_ao_mudar_modo(modo_selecionado):
 @callback(
     Output("container-graficos", "children"),
     Input("checklist-viz", "value"),
-    Input('store-modo-atual', 'data'),  # Gatilho principal
-    Input("filtro-status-orientacoes", "value"),  # Gatilhos secundários
+    Input('store-modo-atual', 'data'),
+    Input("filtro-status-orientacoes", "value"),
     Input("filtro-tipo-orientacoes", "value"),
     Input("filtro-natureza-orientacoes", "value"),
     Input("filtro-grupo-orientacoes", "value"),
@@ -461,19 +562,34 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, st
 
 
 @callback(
-    Output("container-graficos-eventos", "children"),
+    Output("container-graficos-publicacoes", "children"),
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),  # Gatilho principal
-    Input("filtro-grupo-eventos", "value"),  # Gatilho secundário
+    Input("filtro-grupo-publicacoes", "value"),  # Gatilho secundário
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_eventos(selected_viz, modo_atual, grupo_selecionado, stored_data):
-    if not stored_data or "eventos_publicacoes" not in selected_viz:
+def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, stored_data):
+    if not stored_data or "publicacoes" not in selected_viz:
         return []
     modo = modo_atual if modo_atual else 'geral'
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_eventos_publicacoes(dfs_filtrados, modo)
+    return gerar_graficos_publicacoes(dfs_filtrados, modo)
+
+@callback(
+    Output("container-graficos-outros", "children"),
+    Input("checklist-viz", "value"),
+    Input('store-modo-atual', 'data'),  # Gatilho principal
+    Input("filtro-grupo-outros", "value"),  # Gatilho secundário
+    State("store-lista-dfs", "data")
+)
+def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, stored_data):
+    if not stored_data or "outros" not in selected_viz:
+        return []
+    modo = modo_atual if modo_atual else 'geral'
+    dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    return gerar_graficos_outros(dfs_filtrados, modo)
 
 @callback(
     Output("filtros-orientacoes-container", "children"),
@@ -517,12 +633,12 @@ def mostrar_filtros_orientacoes(selected_viz):
 
 
 @callback(
-    Output("wrapper-filtro-eventos", "style"),
+    Output("wrapper-filtro-publicacoes", "style"),
     Input("btn-professor", "n_clicks"),
     Input("btn-geral", "n_clicks"),
     Input("btn-grupo", "n_clicks")
 )
-def mostrar_ocultar_filtro_grupo_eventos(btn_professor, btn_geral, btn_grupo):
+def mostrar_ocultar_filtro_grupo_publicacoes(btn_professor, btn_geral, btn_grupo):
     ctx = callback_context
     if not ctx.triggered: return {'display': 'none'}
     btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -531,6 +647,20 @@ def mostrar_ocultar_filtro_grupo_eventos(btn_professor, btn_geral, btn_grupo):
     else:
         return {'display': 'none'}
 
+@callback(
+    Output("wrapper-filtro-outros", "style"),
+    Input("btn-professor", "n_clicks"),
+    Input("btn-geral", "n_clicks"),
+    Input("btn-grupo", "n_clicks")
+)
+def mostrar_ocultar_filtro_grupo_outros(btn_professor, btn_geral, btn_grupo):
+    ctx = callback_context
+    if not ctx.triggered: return {'display': 'none'}
+    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if btn_id == 'btn-professor':
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
 
 @callback(
     Output("wrapper-filtro-orientacoes", "style"),
@@ -565,17 +695,19 @@ def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
 
 
 @callback(
-    Output("filtro-grupo-eventos", "options"),
+    Output("filtro-grupo-publicacoes", "options"),
+    Output("filtro-grupo-outros", "options"),
     Output("filtro-grupo-orientacoes", "options"),
     Output("filtro-grupo-registros", "options"),
     Input("store-lista-dfs", "data")
 )
 def popular_opcoes_de_grupo(stored_data):
     if not stored_data:
-        return [], [], []
+        return [], [], [], []
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
-    return grupos, grupos, grupos
+    # Retorna 4 outputs sempre (ordem: publicacoes, outros, orientacoes, registros)
+    return grupos, grupos, grupos, grupos
 
 
 @callback(
@@ -607,20 +739,25 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
 @callback(
     Output("section-orientacoes", "style"),
     Output("section-registros", "style"),
-    Output("section-eventos", "style"),
+    Output("section-publicacoes", "style"),
+    Output("section-outros", "style"),
     Input("checklist-viz", "value")
 )
 def toggle_sections(selected_viz):
+
     style_orientacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
                          "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
                          "maxWidth": "1400px"} if "orientacoes" in selected_viz else {"display": "none"}
     style_registros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                       "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                       "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
-    style_eventos = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-                     "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
-                     "maxWidth": "1400px"} if "eventos_publicacoes" in selected_viz else {"display": "none"}
-    return style_orientacoes, style_registros, style_eventos
+                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                         "maxWidth": "1400px"} if "registros" in selected_viz else {"display": "none"}
+    style_publicacoes = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                         "maxWidth": "1400px"} if "publicacoes" in selected_viz else {"display": "none"}
+    style_outros = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+                         "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%",
+                         "maxWidth": "1400px"} if "outros" in selected_viz else {"display": "none"}
+    return style_orientacoes, style_registros, style_publicacoes, style_outros
 
 def generate_excel(data):
     output = io.BytesIO()
@@ -643,7 +780,20 @@ def download_excel(n_clicks, stored_data):
     dfs = {k: pd.read_json(io.StringIO(v), orient='split') for k, v in stored_data.items()}
     excel_io = generate_excel({k: df.to_json(orient='split') for k, df in dfs.items()})
     return dcc.send_bytes(excel_io.getvalue(), "dados_extrator_lattes.xlsx")
-    
+
+mapa_professores = {}
+
+def anonimizar_nomes(df, coluna_nome='Nome'):
+    global mapa_professores
+    if coluna_nome not in df.columns:
+        return df.copy()
+    df_anon = df.copy()
+    for nome in df[coluna_nome].dropna().unique():
+        if nome not in mapa_professores:
+            mapa_professores[nome] = f"P{len(mapa_professores) + 1}"
+    df_anon[coluna_nome] = df[coluna_nome].map(mapa_professores)
+    return df_anon
+
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
     if modo == 'geral':
         df_total = dfs.get('total', pd.DataFrame())
@@ -666,6 +816,7 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         for k in grupos_para_usar:
             df = dfs[k]
             df_filtrado = df.iloc[:-1].copy()  # remove linha de total
+            df_filtrado = anonimizar_nomes(df_filtrado)
             df_filtrado['Grupo/Programa'] = k
             lista_dfs_professores.append(df_filtrado)
 
