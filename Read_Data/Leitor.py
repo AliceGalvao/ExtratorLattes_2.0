@@ -213,8 +213,18 @@ class Leitor:
                 df = pd.DataFrame(dados_pesquisadores)
                 df = df.loc[:, ~df.columns.duplicated()]
 
-                # linha de totais
-                linha_programa = {col: df[col].sum() for col in df.columns if df[col].dtype in [int, float]}
+                # linha de totais (soma apenas das colunas numéricas)
+                linha_programa_full = {col: df[col].sum() for col in df.columns if df[col].dtype in [int, float]}
+                # prepara objeto de totais que será adicionado ao total geral
+                if metricas:
+                    cols_totais = list(metricas)
+                    if 'PUBLICAÇÕES CIENTÍFICAS' in metricas:
+                        cols_totais += LISTA_QUALIS
+                    # mantem apenas as métricas solicitadas que existam
+                    linha_programa = {c: linha_programa_full.get(c, 0) for c in cols_totais}
+                else:
+                    linha_programa = linha_programa_full.copy()
+
                 linha_programa['Nome'] = programa
                 linha_programa['ID LATTES'] = 'Não possui'
                 df_totais = pd.DataFrame([linha_programa])
@@ -223,7 +233,7 @@ class Leitor:
                 df_concat = pd.concat([df, df_totais], ignore_index=True)
                 df_concat = df_concat.loc[:, ~df_concat.columns.duplicated()]
 
-                # aplica filtro de métricas
+                # aplica filtro de métricas nos dados individuais (colunas mostradas por programa)
                 if metricas:
                     cols = ['Nome', 'ID LATTES'] + metricas
                     if 'PUBLICAÇÕES CIENTÍFICAS' in metricas:
@@ -232,7 +242,7 @@ class Leitor:
 
                 lista_dfs.append([programa, df_concat])
 
-                # totais gerais
+                # totais gerais (linha já construída respeitando metricas quando fornecidas)
                 programas_totais.append(linha_programa)
                 programas_totais_eventos.append({'Nome': programa, 'Quantidade de Eventos': len(eventos_organizados)})
 

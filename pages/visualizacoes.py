@@ -979,4 +979,11 @@ def parse_stored_data(stored_data):
             # ignora entradas que não são DataFrames
             continue
 
+    # Normaliza metricas: mantém apenas métricas que existem nas colunas dos DataFrames
+    if dfs:
+        available_metrics = set()
+        for df in dfs.values():
+            available_metrics.update([c for c in df.columns if isinstance(c, str)])
+        metricas = [m for m in metricas if m in available_metrics]
+
     return dfs, metricas

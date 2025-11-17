@@ -2,7 +2,8 @@ import json
 
 from dash import html, dcc, Input, Output, State, callback, no_update
 import dash
-from io import BytesIO
+from io import BytesIO, StringIO
+import pandas as pd
 import logging
 from datetime import datetime
 import traceback
@@ -396,6 +397,85 @@ def resetar_redirecionamento(pathname):
         logger.info("Redirecionamento resetado para /filters.")
         return False
     raise PreventUpdate
+
+
+
+@callback(
+    Output('store-lista-dfs', 'data', allow_duplicate=True),
+    Input('url', 'pathname'),
+    State('store-lista-dfs', 'data'),
+    prevent_initial_call=True
+)
+def normalizar_meta_ao_entrar_em_filtros(pathname, store_data):
+    """Normaliza `_meta.metricas` no `store-lista-dfs` ao abrir a página de filtros.
+    Intersecta a lista gravada em `_meta` com as colunas realmente presentes nos DataFrames
+    salvos no store, evitando que métricas antigas ou removidas continuem visíveis.
+    """
+    if not pathname or pathname != '/filtros':
+        raise PreventUpdate
+
+    if not store_data or not isinstance(store_data, dict):
+        raise PreventUpdate
+
+    # Extrai metricas atuais do _meta (pode ser dict ou string)
+    meta = store_data.get('_meta')
+    metricas = []
+    if isinstance(meta, dict):
+        metricas = meta.get('metricas', []) or []
+    elif isinstance(meta, str):
+        try:
+            metricas = json.loads(meta).get('metricas', []) or []
+        except Exception:
+            metricas = []
+
+    if not metricas:
+        # nada a normalizar
+        raise PreventUpdate
+
+    # Coleta colunas disponíveis nos DataFrames do store
+    available = set()
+    for k, v in store_data.items():
+        if k == '_meta':
+            continue
+        try:
+            if isinstance(v, str):
+                df = pd.read_json(StringIO(v), orient='split')
+            elif isinstance(v, dict):
+                df = pd.DataFrame(v)
+            else:
+                # tentativa de converter para json string
+                df = pd.read_json(StringIO(str(v)), orient='split')
+            available.update([c for c in df.columns if isinstance(c, str)])
+        except Exception:
+            continue
+
+    # Interseção
+    novas_metricas = [m for m in metricas if m in available]
+
+    # Serializa e reescreve apenas entradas válidas (DataFrames), garantindo formato consistente
+    novo_store = {}
+    for k, v in store_data.items():
+        if k == '_meta':
+            continue
+        try:
+            if isinstance(v, str):
+                # tenta carregar e re-serializar (garante que strings JSON válidas sejam padronizadas)
+                df = pd.read_json(StringIO(v), orient='split')
+            elif isinstance(v, dict):
+                df = pd.DataFrame(v)
+            else:
+                df = pd.read_json(StringIO(str(v)), orient='split')
+
+            # re-serializa no formato padrão
+            novo_store[k] = df.to_json(orient='split')
+        except Exception:
+            # ignora entradas inválidas - não serão regravadas
+            continue
+
+    # grava o _meta normalizado
+    novo_store['_meta'] = {'metricas': novas_metricas}
+    logger.info(f"_meta normalizado e store regravado ao entrar em /filtros: {novas_metricas}")
+    return novo_store
 
 
 @callback(
