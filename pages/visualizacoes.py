@@ -284,6 +284,17 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
             title=t.upper(),
             text_auto=True
         )
+        # calcula mediana por Identificador (soma dos valores por identificador)
+        try:
+            sums = df_t.groupby("Identificador")["Valor"].sum()
+            if len(sums) > 0:
+                med = float(sums.median())
+                # adiciona linha de mediana
+                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
+                              annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
+                              annotation_position='top right')
+        except Exception:
+            pass
         fig.update_traces(textposition='inside')
         fig.update_layout(
             template="plotly_white",
@@ -350,6 +361,15 @@ def gerar_graficos_registros(dfs, modo, metricas=None):
         df_melt = df_melt.sort_values("Quantidade", ascending=False)
 
         fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
+        # mediana
+        try:
+            if 'Quantidade' in df_melt.columns and len(df_melt['Quantidade'])>0:
+                med = float(df_melt['Quantidade'].median())
+                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
+                              annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
+                              annotation_position='top right')
+        except Exception:
+            pass
         fig.update_traces(textposition='inside')
         fig.update_layout(
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -425,6 +445,15 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None):
 
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
                      template="plotly_white", text_auto=True)
+        # mediana
+        try:
+            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade'])>0:
+                med = float(df_plot['Quantidade'].median())
+                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
+                              annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
+                              annotation_position='top right')
+        except Exception:
+            pass
         fig.update_traces(textposition='inside')
         fig.update_layout(
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -500,6 +529,15 @@ def gerar_graficos_outros(dfs, modo, metricas=None):
 
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col,
                      template="plotly_white", text_auto=True)
+        # mediana
+        try:
+            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade'])>0:
+                med = float(df_plot['Quantidade'].median())
+                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
+                              annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
+                              annotation_position='top right')
+        except Exception:
+            pass
         fig.update_traces(textposition='inside')
         fig.update_layout(
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
