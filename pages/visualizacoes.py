@@ -37,7 +37,15 @@ layout = html.Div([
                             style={'padding': '10px 10px', 'backgroundColor': '#28a745', 'color': 'white',
                                    'border': 'none', 'borderRadius': '20px', 'margin': '5px', 'cursor': 'pointer',
                                    'boxShadow': '0px 2px 5px rgba(0,0,0,0.2)'})
-            ], style={'display': 'flex', 'flexWrap': 'wrap'})
+            ], style={'display': 'flex', 'flexWrap': 'wrap'}),
+html.Div([
+        html.Div("Mediana: se refere a mediana da extração atual no modo escolhido.",
+                 style={'fontWeight': 'italic' ,'marginTop': '10px', 'fontSize': '15px'}),
+        html.Div(
+            "Mediana Geral: se refere a mediana de todos os pesquisadores da UPE cadastrados no Sapiens. Extração feita em novembro de 2025.",
+            style={'fontWeight': 'italic', 'fontSize': '15px'}),
+
+    ]),
         ], style={'width': '45%', 'padding': '10px'}),
 
         html.Div([
@@ -60,7 +68,8 @@ layout = html.Div([
                         style={'backgroundColor': '#28a745', 'color': 'white',
                                'padding': '10px 30px', 'fontSize': '16px',
                                'borderRadius': '20px', 'border': 'none', 'cursor': 'pointer'})
-        ], style={'width': '20%', 'padding': '10px', 'textAlign': 'right', 'display': 'flex', 'alignItems': 'center'})
+        ], style={'width': '20%', 'padding': '10px', 'textAlign': 'right', 'display': 'flex', 'alignItems': 'center'}),
+
     ], style={
         'display': 'flex',
         'backgroundColor': '#f4f4f4',
@@ -287,7 +296,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
         # calcula mediana por Identificador (soma dos valores por identificador)
         try:
             sums = df_t.groupby("Identificador")["Valor"].sum()
-            if len(sums) > 0:
+            if len(sums) > 0 and modo != 'geral':
                 med = float(sums.median())
                 # adiciona linha de mediana
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
@@ -363,7 +372,7 @@ def gerar_graficos_registros(dfs, modo, metricas=None):
         fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
         # mediana
         try:
-            if 'Quantidade' in df_melt.columns and len(df_melt['Quantidade'])>0:
+            if 'Quantidade' in df_melt.columns and len(df_melt['Quantidade'])>0 and modo != 'geral':
                 med = float(df_melt['Quantidade'].median())
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
                               annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
@@ -447,7 +456,7 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None):
                      template="plotly_white", text_auto=True)
         # mediana
         try:
-            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade'])>0:
+            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade'])>0 and modo != 'geral':
                 med = float(df_plot['Quantidade'].median())
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
                               annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
@@ -531,7 +540,7 @@ def gerar_graficos_outros(dfs, modo, metricas=None):
                      template="plotly_white", text_auto=True)
         # mediana
         try:
-            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade'])>0:
+            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade'])>0 and modo != 'geral':
                 med = float(df_plot['Quantidade'].median())
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
                               annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
