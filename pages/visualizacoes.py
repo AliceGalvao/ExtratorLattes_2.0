@@ -42,7 +42,7 @@ html.Div([
         html.Div("Mediana: se refere a mediana da extração atual no modo escolhido.",
                  style={'fontWeight': 'italic' ,'marginTop': '10px', 'fontSize': '15px'}),
         html.Div(
-            "Mediana Geral: se refere a mediana de todos os pesquisadores da UPE cadastrados no Sapiens. Extração feita em novembro de 2025.",
+            "Mediana Geral: se refere a mediana de todos os pesquisadores da UPE cadastrados no Sapiens. Extração feita em novembro de 2025, abordando o periódo de 2021 a 2025.",
             style={'fontWeight': 'italic', 'fontSize': '15px'}),
 
     ]),
@@ -302,6 +302,11 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
                               annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
                               annotation_position='top right')
+                # mediana geral com valores colocados manualmente
+                if len(sums) > 0 and modo == 'professor':
+                    fig.add_hline(y=0, line_dash='dash', line_color='crimson',
+                              annotation_text=(f"Mediana Geral: {0}"),
+                              annotation_position='top right')
         except Exception:
             pass
         fig.update_traces(textposition='inside')
@@ -377,6 +382,11 @@ def gerar_graficos_registros(dfs, modo, metricas=None):
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
                               annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
                               annotation_position='top right')
+                # mediana geral com valores colocados manualmente
+                if modo == 'professor':
+                    fig.add_hline(y=0, line_dash='dash', line_color='crimson',
+                                  annotation_text=(f"Mediana Geral: {0}"),
+                                  annotation_position='top right')
         except Exception:
             pass
         fig.update_traces(textposition='inside')
@@ -461,6 +471,11 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None):
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
                               annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
                               annotation_position='top right')
+                # mediana geral com valores colocados manualmente
+                if modo == 'professor':
+                    fig.add_hline(y=0, line_dash='dash', line_color='crimson',
+                                  annotation_text=(f"Mediana Geral: {0}"),
+                                  annotation_position='top right')
         except Exception:
             pass
         fig.update_traces(textposition='inside')
@@ -545,6 +560,11 @@ def gerar_graficos_outros(dfs, modo, metricas=None):
                 fig.add_hline(y=med, line_dash='dash', line_color='crimson',
                               annotation_text=(f"Mediana: {med:.0f}" if med.is_integer() else f"Mediana: {med:.2f}"),
                               annotation_position='top right')
+                # mediana geral com valores colocados manualmente
+                if modo == 'professor':
+                    fig.add_hline(y=3, line_dash='dash', line_color='crimson',
+                                  annotation_text=(f"Mediana Geral: {3}"),
+                                  annotation_position='top right')
         except Exception:
             pass
         fig.update_traces(textposition='inside')
