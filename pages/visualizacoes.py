@@ -92,100 +92,82 @@ html.Div([
 
     html.Div(id="section-orientacoes", children=[
         html.H3("Orientações", style={'textAlign': 'center', 'marginBottom': '15px'}),
+        html.Div([
+            dcc.Checklist(id='check-mediana-orientacoes', options=[{'label': ' Exibir Medianas', 'value': 'SIM'}],
+                          value=[],
+                          style={'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px', 'color': '#2c3e50'})
+        ]),
         html.Div(id="filtros-orientacoes-container"),
-        html.Div(id="container-graficos", style={
-            'display': 'flex',
-            'flexDirection': 'row',
-            'flexWrap': 'nowrap',
-            'overflowX': 'auto',
-            'padding': '10px',
-            'gap': '15px',
-            'width': '100%',
-            'height': '450px'
-        })
-    ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9",
-              "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-              "width": "95%", "maxWidth": "1500px"}),
+        html.Div(id="container-graficos",
+                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+    ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
+    # --- SEÇÃO REGISTROS ---
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-registros-container",
-                 children=[html.Div(id="wrapper-filtro-registros",
-                                    style={'display': 'none'},
-                                    children=[
-                                        html.Div([
-                                        html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
-                                        dcc.Dropdown(id="filtro-grupo-registros", options=[], clearable=True, placeholder="Selecione o grupo")
-                                        ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'})
-                                    ])
-            ]),
-        html.Div(id="container-graficos-registros", style={
-            'display': 'flex',
-            'flexDirection': 'row',
-            'flexWrap': 'nowrap',
-            'overflowX': 'auto',
-            'padding': '10px',
-            'gap': '15px',
-            'width': '100%',
-            'height': '450px'
-        })
-    ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9",
-              "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-              "width": "95%", "maxWidth": "1500px"}),
+        html.Div([
+            dcc.Checklist(id='check-mediana-registros', options=[{'label': ' Exibir Medianas', 'value': 'SIM'}],
+                          value=[], style={'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px'})
+        ]),
+        html.Div(id="filtros-registros-container", children=[
+            html.Div(id="wrapper-filtro-registros", style={'display': 'none'}, children=[
+                html.Div([
+                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom': '5px'}),
+                    dcc.Dropdown(id="filtro-grupo-registros", options=[], clearable=True,
+                                 placeholder="Selecione o grupo")
+                ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
+            ])
+        ]),
+        html.Div(id="container-graficos-registros",
+                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+    ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
+    # --- SEÇÃO PUBLICAÇÕES ---
     html.Div(id="section-publicacoes", children=[
         html.H3("Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
-        html.Div(id="filtros-publicacoes-container",
-                 children =[
-                    html.Div(id="wrapper-filtro-publicacoes",
-                            style = {'display': 'none'},
-                            children=[
-                                html.Div([
-                                html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
-                                dcc.Dropdown(id="filtro-grupo-publicacoes", options=[], clearable=True, placeholder="Selecione o grupo")
-                                ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
-                            ])
-                     ]),
-        html.Div(id="container-graficos-publicacoes", style={
-            'display': 'flex',
-            'flexDirection': 'row',
-            'flexWrap': 'nowrap',
-            'overflowX': 'auto',
-            'padding': '10px',
-            'gap': '15px',
-            'width': '100%',
-            'height': '450px'
-        })
-    ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9",
-              "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-              "width": "95%", "maxWidth": "1500px"}),
+        html.Div([
+            dcc.Checklist(id='check-mediana-publicacoes', options=[{'label': ' Exibir Medianas', 'value': 'SIM'}],
+                          value=[], style={'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px'})
+        ]),
+        html.Div(id="filtros-publicacoes-container", children=[
+            html.Div(id="wrapper-filtro-publicacoes", style={'display': 'none'}, children=[
+                html.Div([
+                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom': '5px'}),
+                    dcc.Dropdown(id="filtro-grupo-publicacoes", options=[], clearable=True,
+                                 placeholder="Selecione o grupo")
+                ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
+            ])
+        ]),
+        html.Div(id="container-graficos-publicacoes",
+                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+    ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
+    # --- SEÇÃO OUTROS ---
     html.Div(id="section-outros", children=[
-            html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
-            html.Div(id="filtros-outros-container",
-                     children =[
-                        html.Div(id="wrapper-filtro-outros",
-                                style = {'display': 'none'},
-                                children=[
-                                    html.Div([
-                                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom':'5px'}),
-                                    dcc.Dropdown(id="filtro-grupo-outros", options=[], clearable=True, placeholder="Selecione o grupo")
-                                    ], style={'width':'300px','display': 'flex', 'flexDirection': 'column', 'margin-left':'20px'} )
-                                ])
-                         ]),
-            html.Div(id="container-graficos-outros", style={
-                'display': 'flex',
-                'flexDirection': 'row',
-                'flexWrap': 'nowrap',
-                'overflowX': 'auto',
-                'padding': '10px',
-                'gap': '15px',
-                'width': '100%',
-                'height': '450px'
-            })
-        ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9",
-                  "borderRadius": "10px", "boxShadow": "0 3px 8px rgba(0,0,0,0.1)",
-                  "width": "95%", "maxWidth": "1500px"}),
+        html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
+        html.Div([
+            dcc.Checklist(id='check-mediana-outros', options=[{'label': ' Exibir Medianas', 'value': 'SIM'}], value=[],
+                          style={'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px'})
+        ]),
+        html.Div(id="filtros-outros-container", children=[
+            html.Div(id="wrapper-filtro-outros", style={'display': 'none'}, children=[
+                html.Div([
+                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom': '5px'}),
+                    dcc.Dropdown(id="filtro-grupo-outros", options=[], clearable=True, placeholder="Selecione o grupo")
+                ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
+            ])
+        ]),
+        html.Div(id="container-graficos-outros",
+                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+    ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
     dcc.Download(id="download-dataframe-xlsx"),
     dcc.Store(id='store-modo-atual')
@@ -219,8 +201,7 @@ MEDIANAS_GERAIS = {
     "PUB. TEC. E ART.": 0.0
 }
 
-
-def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None):
+def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None, exibir_mediana=False):
     colunas_map = {
         "mestrado": {"orientacoes": {"concluido": ["O.P MESTRADO CONC."], "andamento": ["O.P MESTRADO AND."]},
                      "coorientacoes": {"concluido": ["C.O MESTRADO CONC."], "andamento": ["C.O MESTRADO AND."]}},
@@ -290,23 +271,24 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
         ordem = df_t.groupby("Identificador")["Valor"].sum().sort_values(ascending=False).index.tolist()
         fig = px.bar(df_t, x="Identificador", y="Valor", color="Status", barmode="stack", title=t.upper(), text_auto=True)
 
-        try:
-            sums = df_t.groupby("Identificador")["Valor"].sum()
-            if len(sums) > 0 and modo != 'geral':
-                med_l = float(sums.median())
-                med_g = MEDIANAS_GERAIS.get(t, 0) if modo == 'professor' else None
-
-                if med_g is not None and med_l == med_g:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                else:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
-                                  annotation_position='top right')
-                    if med_g is not None:
-                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
-        except: pass
+        # LÓGICA DE MEDIANA CONDICIONAL
+        if exibir_mediana:
+            try:
+                sums = df_t.groupby("Identificador")["Valor"].sum()
+                if len(sums) > 0 and modo != 'geral':
+                    med_l = float(sums.median())
+                    med_g = MEDIANAS_GERAIS.get(t, 0) if modo == 'professor' else None
+                    if med_g is not None and med_l == med_g:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                    else:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_position='top right')
+                        if med_g is not None:
+                            fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+            except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(template="plotly_white", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -317,8 +299,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
                                  style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-
-def gerar_graficos_registros(dfs, modo, metricas=None):
+def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
     graficos = []
     df_plot_list = []
@@ -340,22 +321,22 @@ def gerar_graficos_registros(dfs, modo, metricas=None):
         df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]}).sort_values("Quantidade", ascending=False)
         fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
-        try:
-            if len(df_melt) > 0 and modo != 'geral':
-                med_l = float(df_melt['Quantidade'].median())
-                med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
-
-                if med_g is not None and med_l == med_g:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                else:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
-                                  annotation_position='top right')
-                    if med_g is not None:
-                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
-        except: pass
+        if exibir_mediana:
+            try:
+                if len(df_melt) > 0 and modo != 'geral':
+                    med_l = float(df_melt['Quantidade'].median())
+                    med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
+                    if med_g is not None and med_l == med_g:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                    else:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_position='top right')
+                        if med_g is not None:
+                            fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+            except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -366,8 +347,7 @@ def gerar_graficos_registros(dfs, modo, metricas=None):
                                  style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-
-def gerar_graficos_publicacoes(dfs, modo, metricas=None):
+def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
     todas_metricas = metricas_publicacoes
     graficos = []
@@ -394,21 +374,22 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None):
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
-        try:
-            if len(df_plot) > 0 and modo != 'geral':
-                med_l = float(df_plot['Quantidade'].median())
-                med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
-                if med_g is not None and med_l == med_g:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                else:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
-                                  annotation_position='top right')
-                    if med_g is not None:
-                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
-        except: pass
+        if exibir_mediana:
+            try:
+                if len(df_plot) > 0 and modo != 'geral':
+                    med_l = float(df_plot['Quantidade'].median())
+                    med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
+                    if med_g is not None and med_l == med_g:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                    else:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_position='top right')
+                        if med_g is not None:
+                            fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+            except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -419,8 +400,7 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None):
                                  style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-
-def gerar_graficos_outros(dfs, modo, metricas=None):
+def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
     todas_metricas = metricas_outros
     graficos = []
@@ -447,21 +427,22 @@ def gerar_graficos_outros(dfs, modo, metricas=None):
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
-        try:
-            if len(df_plot) > 0 and modo != 'geral':
-                med_l = float(df_plot['Quantidade'].median())
-                med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
-                if med_g is not None and med_l == med_g:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                else:
-                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
-                                  annotation_position='top right')
-                    if med_g is not None:
-                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
-        except: pass
+        if exibir_mediana:
+            try:
+                if len(df_plot) > 0 and modo != 'geral':
+                    med_l = float(df_plot['Quantidade'].median())
+                    med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
+                    if med_g is not None and med_l == med_g:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                    else:
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_position='top right')
+                        if med_g is not None:
+                            fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+            except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -472,6 +453,7 @@ def gerar_graficos_outros(dfs, modo, metricas=None):
                                  style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
+
 @callback(
     Output('store-modo-atual', 'data'),
     Input('btn-geral', 'n_clicks'),
@@ -500,6 +482,7 @@ def guardar_modo_atual(btn_geral, btn_grupo, btn_professor):
 def resetar_filtros_ao_mudar_modo(modo_selecionado):
     return 'ambos', 'todos', 'soma', None, None, None
 
+
 @callback(
     Output("container-graficos", "children"),
     Input("checklist-viz", "value"),
@@ -508,64 +491,80 @@ def resetar_filtros_ao_mudar_modo(modo_selecionado):
     Input("filtro-tipo-orientacoes", "value"),
     Input("filtro-natureza-orientacoes", "value"),
     Input("filtro-grupo-orientacoes", "value"),
+    Input("check-mediana-orientacoes", "value"),  # NOVO INPUT
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_orientacoes(selected_viz, modo_atual,
-                                   status, tipo, natureza, grupo_selecionado, stored_data):
+def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natureza,
+                                   grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "orientacoes" not in selected_viz:
         return []
 
+    exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas)
+
+    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas, exibir_mediana=exibir)
 
 
 @callback(
     Output("container-graficos-registros", "children"),
     Input("checklist-viz", "value"),
-    Input('store-modo-atual', 'data'),  # Gatilho principal
-    Input("filtro-grupo-registros", "value"),  # Gatilho secundário
+    Input('store-modo-atual', 'data'),
+    Input("filtro-grupo-registros", "value"),
+    Input("check-mediana-registros", "value"),  # NOVO INPUT
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, stored_data):
+def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "registros" not in selected_viz:
         return []
+
+    exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_registros(dfs_filtrados, modo, metricas)
+
+    return gerar_graficos_registros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
 
 
 @callback(
     Output("container-graficos-publicacoes", "children"),
     Input("checklist-viz", "value"),
-    Input('store-modo-atual', 'data'),  # Gatilho principal
-    Input("filtro-grupo-publicacoes", "value"),  # Gatilho secundário
+    Input('store-modo-atual', 'data'),
+    Input("filtro-grupo-publicacoes", "value"),
+    Input("check-mediana-publicacoes", "value"),  # NOVO INPUT
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, stored_data):
+def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "publicacoes" not in selected_viz:
         return []
+
+    exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas)
+
+    return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+
 
 @callback(
     Output("container-graficos-outros", "children"),
     Input("checklist-viz", "value"),
-    Input('store-modo-atual', 'data'),  # Gatilho principal
-    Input("filtro-grupo-outros", "value"),  # Gatilho secundário
+    Input('store-modo-atual', 'data'),
+    Input("filtro-grupo-outros", "value"),
+    Input("check-mediana-outros", "value"),  # NOVO INPUT
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, stored_data):
+def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "outros" not in selected_viz:
         return []
+
+    exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-    return gerar_graficos_outros(dfs_filtrados, modo, metricas)
+
+    return gerar_graficos_outros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
 
 @callback(
     Output("filtros-orientacoes-container", "children"),
@@ -607,6 +606,21 @@ def mostrar_filtros_orientacoes(selected_viz):
     )
     return html.Div([filtros_padrao, filtro_condicional], style={'display': 'flex', 'alignItems': 'center'})
 
+
+@callback(
+    [Output("check-mediana-orientacoes", "style"),
+     Output("check-mediana-registros", "style"),
+     Output("check-mediana-publicacoes", "style"),
+     Output("check-mediana-outros", "style")],
+    Input('store-modo-atual', 'data')
+)
+def gerenciar_visibilidade_mediana(modo_atual):
+    if modo_atual == 'geral':
+        estilo = {'display': 'none'}
+    else:
+        estilo = {'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px'}
+
+    return [estilo, estilo, estilo, estilo]
 
 @callback(
     Output("wrapper-filtro-publicacoes", "style"),
