@@ -304,9 +304,16 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
                               annotation_position='top right')
                 # mediana geral com valores colocados manualmente
                 if len(sums) > 0 and modo == 'professor':
-                    fig.add_hline(y=0, line_dash='dash', line_color='crimson',
-                              annotation_text=(f"Mediana Geral: {0}"),
+                    ###
+                    if metricas == "ORIENTAÇÕES CONC. TCC":
+                        fig.add_hline(y=0, line_dash='dash', line_color='crimson',
+                              annotation_text=(f"Mediana Geral: {3}"),
                               annotation_position='top right')
+                    ###
+                    else:
+                        fig.add_hline(y=0, line_dash='dash', line_color='crimson',
+                                      annotation_text=(f"Mediana Geral: {0}"),
+                                      annotation_position='top right')
         except Exception:
             pass
         fig.update_traces(textposition='inside')
