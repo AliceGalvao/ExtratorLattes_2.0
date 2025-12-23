@@ -201,22 +201,22 @@ def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=65, altura_por_b
 # Valores de referência para o cálculo da "Mediana Geral"
 MEDIANAS_GERAIS = {
     # Orientações
-    "mestrado": 0,
-    "doutorado": 0,
-    "ic": 0,
-    "conc-esp": 0,
-    "tcc-conc": 3,
+    "mestrado": 0.0,
+    "doutorado": 0.0,
+    "ic": 0.0,
+    "conc-esp": 0.0,
+    "tcc-conc": 3.0,
     # Publicações
-    "PUBLICAÇÕES CIENTÍFICAS": 4,
-    "LIVROS ISBN": 0,
-    "CAPÍTULOS ISBN": 1,
-    "PUB. TRAB. EVENTOS": 0,
+    "PUBLICAÇÕES CIENTÍFICAS": 4.0,
+    "LIVROS ISBN": 0.0,
+    "CAPÍTULOS ISBN": 1.0,
+    "PUB. TRAB. EVENTOS": 0.0,
     # Registros
-    "REGISTROS DE SW": 0,
-    "PATENTES": 0,
+    "REGISTROS DE SW": 0.0,
+    "PATENTES": 0.0,
     # Outros
     "EVENTOS ORGANIZADOS": 1,
-    "PUB. TEC. E ART.": 0
+    "PUB. TEC. E ART.": 0.0
 }
 
 
@@ -239,21 +239,14 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
 
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
-        if df_total.empty:
-            return []
+        if df_total.empty: return []
         if 'Nome' in df_total.columns:
             df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
 
-        todas_metricas = [
-            "O.P MESTRADO CONC.", "O.P MESTRADO AND.",
-            "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
-            "O.P DOUTORADO CONC.", "O.P DOUTORADO AND.",
-            "C.O DOUTORADO CONC.", "C.O DOUTORADO AND.",
-            "ORIENTAÇÕES I.C", "ORIENTACOES CONC. ESPECIALIZACAO",
-            "ORIENTAÇÕES CONC. TCC"
-        ]
-        if metricas:
-            todas_metricas = [c for c in todas_metricas if c in metricas]
+        todas_metricas = ["O.P MESTRADO CONC.", "O.P MESTRADO AND.", "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
+                          "O.P DOUTORADO CONC.", "O.P DOUTORADO AND.", "C.O DOUTORADO CONC.", "C.O DOUTORADO AND.",
+                          "ORIENTAÇÕES I.C", "ORIENTACOES CONC. ESPECIALIZACAO", "ORIENTAÇÕES CONC. TCC"]
+        if metricas: todas_metricas = [c for c in todas_metricas if c in metricas]
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
 
@@ -261,40 +254,28 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
             professor = row['Nome']
             for t in tipos_a_mostrar:
                 if natureza == "soma":
-                    cols_conc = colunas_map[t]["orientacoes"]["concluido"] + colunas_map[t]["coorientacoes"][
-                        "concluido"]
+                    cols_conc = colunas_map[t]["orientacoes"]["concluido"] + colunas_map[t]["coorientacoes"]["concluido"]
                     cols_and = colunas_map[t]["orientacoes"]["andamento"] + colunas_map[t]["coorientacoes"]["andamento"]
                 else:
                     cols_conc = colunas_map[t][natureza]["concluido"]
                     cols_and = colunas_map[t][natureza]["andamento"]
-
                 val_conc = row[cols_conc].sum() if all(c in row.index for c in cols_conc) else 0
                 val_and = row[cols_and].sum() if all(c in row.index for c in cols_and) else 0
-
                 if status in ("concluido", "ambos"):
                     dados_plot.append({"Identificador": professor, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
                 if status in ("andamento", "ambos"):
-                    dados_plot.append(
-                        {"Identificador": professor, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
+                    dados_plot.append({"Identificador": professor, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
     else:
         for grupo, df in dfs.items():
             for t in tipos_a_mostrar:
                 if natureza == "soma":
-                    cols_conc = colunas_map[t]["orientacoes"]["concluido"] + colunas_map[t]["coorientacoes"][
-                        "concluido"]
+                    cols_conc = colunas_map[t]["orientacoes"]["concluido"] + colunas_map[t]["coorientacoes"]["concluido"]
                     cols_and = colunas_map[t]["orientacoes"]["andamento"] + colunas_map[t]["coorientacoes"]["andamento"]
                 else:
                     cols_conc = colunas_map[t][natureza]["concluido"]
                     cols_and = colunas_map[t][natureza]["andamento"]
-
-                if metricas is not None:
-                    cols_conc = [c for c in cols_conc if c in metricas]
-                    cols_and = [c for c in cols_and if c in metricas]
-
-                val_conc = df[cols_conc].sum(axis=1).sum() if cols_conc and all(
-                    c in df.columns for c in cols_conc) else 0
+                val_conc = df[cols_conc].sum(axis=1).sum() if cols_conc and all(c in df.columns for c in cols_conc) else 0
                 val_and = df[cols_and].sum(axis=1).sum() if cols_and and all(c in df.columns for c in cols_and) else 0
-
                 if status in ("concluido", "ambos"):
                     dados_plot.append({"Identificador": grupo, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
                 if status in ("andamento", "ambos"):
@@ -305,53 +286,37 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None)
 
     for t in tipos_a_mostrar:
         df_t = df_plot[df_plot["Tipo"] == t]
-        if df_t.empty:
-            continue
-
-        ordem = (df_t.groupby("Identificador")["Valor"].sum().sort_values(ascending=False).index.tolist())
-
-        fig = px.bar(df_t, x="Identificador", y="Valor", color="Status", barmode="stack", title=t.upper(),
-                     text_auto=True)
+        if df_t.empty: continue
+        ordem = df_t.groupby("Identificador")["Valor"].sum().sort_values(ascending=False).index.tolist()
+        fig = px.bar(df_t, x="Identificador", y="Valor", color="Status", barmode="stack", title=t.upper(), text_auto=True)
 
         try:
             sums = df_t.groupby("Identificador")["Valor"].sum()
             if len(sums) > 0 and modo != 'geral':
-                med = float(sums.median())
-                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
-                              annotation_text=(f"<b>Mediana: {med:.0f}</b>" if med.is_integer() else f"<b>Mediana: {med:.2f}</b>"),
-                              annotation_position='top right')
+                med_l = float(sums.median())
+                med_g = MEDIANAS_GERAIS.get(t, 0) if modo == 'professor' else None
 
-                if modo == 'professor':
-                    # Lógica de Mediana Geral Específica
-                    valor_geral = MEDIANAS_GERAIS.get(t, 0)
-                    fig.add_hline(y=valor_geral, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana Geral: {valor_geral}</b>",
+                if med_g is not None and med_l == med_g:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                else:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
                                   annotation_position='top right')
-        except Exception:
-            pass
+                    if med_g is not None:
+                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+        except: pass
 
         fig.update_traces(textposition='inside')
-        fig.update_layout(
-            template="plotly_white",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=ordem),
-            yaxis=dict(title=None),
-            margin=dict(l=20, r=20, t=65, b=60)
-        )
-
+        fig.update_layout(template="plotly_white", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=ordem),
+                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=65, b=60))
         largura, altura = ajustar_tamanho_grafico(df_t, altura_min=350)
-        graficos.append(
-            html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                     style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px',
-                            'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}
-                     )
-        )
+        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
-    if not graficos: return []
-    return html.Div(graficos,
-                    style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                           'gap': '15px', 'padding': '10px', 'height': '100%'})
-
+    return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 def gerar_graficos_registros(dfs, modo, metricas=None):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
@@ -360,69 +325,47 @@ def gerar_graficos_registros(dfs, modo, metricas=None):
 
     for nome, df in dfs.items():
         if modo == 'geral' and nome == 'total':
-            df_tmp = df.copy()
-            df_tmp['X'] = 'Total'
-            df_plot_list.append(df_tmp)
+            df_tmp = df.copy(); df_tmp['X'] = 'Total'; df_plot_list.append(df_tmp)
         elif modo == 'grupo' and nome != 'total':
-            df_tmp = df.iloc[[-1]].copy()
-            df_tmp['X'] = nome
-            df_plot_list.append(df_tmp)
+            df_tmp = df.iloc[[-1]].copy(); df_tmp['X'] = nome; df_plot_list.append(df_tmp)
         elif modo == 'professor' and nome != 'total':
-            df_tmp = df.copy()
-            df_tmp['X'] = df_tmp.get('Nome', df_tmp.columns[0])
-            df_plot_list.append(df_tmp)
+            df_tmp = df.copy(); df_tmp['X'] = df_tmp.get('Nome', df_tmp.columns[0]); df_plot_list.append(df_tmp)
 
-    if not df_plot_list:
-        return [html.Div("Nenhum dado disponível.")]
-
+    if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
     df_total = pd.concat(df_plot_list, ignore_index=True)
-    if metricas is not None:
-        metricas_registros = [c for c in metricas_registros if c in metricas]
+    if metricas is not None: metricas_registros = [c for c in metricas_registros if c in metricas]
 
     for col in metricas_registros:
-        if col not in df_total.columns:
-            continue
-
-        df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]})
-        df_melt = df_melt.sort_values("Quantidade", ascending=False)
-
+        if col not in df_total.columns: continue
+        df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]}).sort_values("Quantidade", ascending=False)
         fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         try:
-            if 'Quantidade' in df_melt.columns and len(df_melt['Quantidade']) > 0 and modo != 'geral':
-                med = float(df_melt['Quantidade'].median())
-                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
-                              annotation_text=(f"<b>Mediana: {med:.0f}</b>" if med.is_integer() else f"<b>Mediana: {med:.2f}</b>"),
-                              annotation_position='top right')
+            if len(df_melt) > 0 and modo != 'geral':
+                med_l = float(df_melt['Quantidade'].median())
+                med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
 
-                if modo == 'professor':
-                    valor_geral = MEDIANAS_GERAIS.get(col, 0)
-                    fig.add_hline(y=valor_geral, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana Geral: {valor_geral}</b>",
+                if med_g is not None and med_l == med_g:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                else:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
                                   annotation_position='top right')
-        except Exception:
-            pass
+                    if med_g is not None:
+                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+        except: pass
 
         fig.update_traces(textposition='inside')
-        fig.update_layout(
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_melt["X"]),
-            yaxis=dict(title=None),
-            margin=dict(l=20, r=20, t=40, b=60)
-        )
-
+        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_melt["X"]),
+                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
         largura, altura = ajustar_tamanho_grafico(df_total, altura_min=350)
-        graficos.append(
-            html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                     style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px',
-                            'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}
-                     )
-        )
+        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
-    return html.Div(graficos,
-                    style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                           'gap': '15px', 'padding': '10px', 'height': '100%'})
-
+    return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 def gerar_graficos_publicacoes(dfs, modo, metricas=None):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
@@ -432,76 +375,50 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None):
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty: return []
-        if 'Nome' in df_total.columns:
-            df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
+        if 'Nome' in df_total.columns: df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
     elif modo == 'geral':
-        df_total = dfs.get("total", pd.DataFrame()).copy()
-        if df_total.empty: return []
-        df_total['X'] = "Total"
+        df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
     elif modo == 'grupo':
-        df_plot_list = []
-        for nome, df in dfs.items():
-            if nome != "total":
-                df_tmp = df.copy()
-                df_tmp['X'] = nome
-                df_plot_list.append(df_tmp)
+        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome != "total"]
         if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
-    else:
-        return [html.Div("Modo inválido.")]
+    else: return [html.Div("Modo inválido.")]
 
-    if metricas is not None:
-        todas_metricas = [c for c in todas_metricas if c in metricas]
+    if metricas is not None: todas_metricas = [c for c in todas_metricas if c in metricas]
 
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
-
-        df_plot = df_total[['X']].copy()
-        df_plot[col] = df_total[col] if col in df_total.columns else 0
-        df_plot = df_plot.groupby("X", as_index=False)[col].sum()
-        df_plot.rename(columns={col: "Quantidade"}, inplace=True)
-        df_plot = df_plot.sort_values("Quantidade", ascending=False)
-
+        df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         try:
-            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade']) > 0 and modo != 'geral':
-                med = float(df_plot['Quantidade'].median())
-                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
-                              annotation_text=(f"<b>Mediana: {med:.0f}</b>" if med.is_integer() else f"<b>Mediana: {med:.2f}</b>"),
-                              annotation_position='top right')
-
-                if modo == 'professor':
-                    valor_geral = MEDIANAS_GERAIS.get(col, 0)
-                    fig.add_hline(y=valor_geral, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana Geral: {valor_geral}</b>",
+            if len(df_plot) > 0 and modo != 'geral':
+                med_l = float(df_plot['Quantidade'].median())
+                med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
+                if med_g is not None and med_l == med_g:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                else:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
                                   annotation_position='top right')
-        except Exception:
-            pass
+                    if med_g is not None:
+                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+        except: pass
 
         fig.update_traces(textposition='inside')
-        fig.update_layout(
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-            yaxis=dict(title=None),
-            margin=dict(l=20, r=20, t=40, b=60)
-        )
-
+        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
+                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
         largura, altura = ajustar_tamanho_grafico(df_total)
-        graficos.append(
-            html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                     style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px',
-                            'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
-        )
+        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
-    if not graficos: return []
-    return html.Div(graficos,
-                    style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                           'gap': '15px', 'padding': '10px', 'height': '100%'})
-
+    return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 def gerar_graficos_outros(dfs, modo, metricas=None):
     metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
@@ -511,74 +428,50 @@ def gerar_graficos_outros(dfs, modo, metricas=None):
     if modo == 'professor':
         df_total = dfs.get("professores", pd.DataFrame()).copy()
         if df_total.empty: return []
-        if 'Nome' in df_total.columns:
-            df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
+        if 'Nome' in df_total.columns: df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
     elif modo == 'geral':
-        df_total = dfs.get("total", pd.DataFrame()).copy();
-        df_total['X'] = "Total"
+        df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
     elif modo == 'grupo':
-        df_plot_list = []
-        for nome, df in dfs.items():
-            if nome != "total":
-                df_tmp = df.copy();
-                df_tmp['X'] = nome;
-                df_plot_list.append(df_tmp)
+        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome != "total"]
         if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
-    else:
-        return [html.Div("Modo inválido.")]
+    else: return [html.Div("Modo inválido.")]
 
-    if metricas is not None:
-        todas_metricas = [c for c in todas_metricas if c in metricas]
+    if metricas is not None: todas_metricas = [c for c in todas_metricas if c in metricas]
 
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
-
-        df_plot = df_total[['X']].copy()
-        df_plot[col] = df_total[col] if col in df_total.columns else 0
-        df_plot = df_plot.groupby("X", as_index=False)[col].sum()
-        df_plot.rename(columns={col: "Quantidade"}, inplace=True)
-        df_plot = df_plot.sort_values("Quantidade", ascending=False)
-
+        df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         try:
-            if 'Quantidade' in df_plot.columns and len(df_plot['Quantidade']) > 0 and modo != 'geral':
-                med = float(df_plot['Quantidade'].median())
-                fig.add_hline(y=med, line_dash='dash', line_color='crimson',
-                              annotation_text=(f"<b>Mediana: {med:.0f}</b>" if med.is_integer() else f"<b>Mediana: {med:.2f}</b>"),
-                              annotation_position='top right')
-
-                if modo == 'professor':
-                    valor_geral = MEDIANAS_GERAIS.get(col, 0)
-                    fig.add_hline(y=valor_geral, line_dash='dash', line_color='crimson',
-                                  annotation_text=f"<b>Mediana Geral: {valor_geral}</b>",
+            if len(df_plot) > 0 and modo != 'geral':
+                med_l = float(df_plot['Quantidade'].median())
+                med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
+                if med_g is not None and med_l == med_g:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                else:
+                    fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                  annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
                                   annotation_position='top right')
-        except Exception:
-            pass
+                    if med_g is not None:
+                        fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+        except: pass
 
         fig.update_traces(textposition='inside')
-        fig.update_layout(
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-            yaxis=dict(title=None),
-            margin=dict(l=20, r=20, t=40, b=60)
-        )
-
+        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
+                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
         largura, altura = ajustar_tamanho_grafico(df_total)
-        graficos.append(
-            html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                     style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px',
-                            'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})
-        )
+        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
-    if not graficos: return []
-    return html.Div(graficos,
-                    style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                           'gap': '15px', 'padding': '10px', 'height': '100%'})
+    return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 @callback(
     Output('store-modo-atual', 'data'),
     Input('btn-geral', 'n_clicks'),
