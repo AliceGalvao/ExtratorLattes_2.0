@@ -69,7 +69,16 @@ html.Div([
                 ],
                 value=['registros', 'orientacoes', 'publicacoes', 'outros'],
                 style={'display': 'flex', 'gap': '30px', 'flexWrap': 'wrap', 'fontSize': '14px'}
-            )
+            ),
+html.Div([
+                html.Label("Filtrar Período (Modo Geral):", style={'fontWeight': 'bold', 'marginBottom': '10px'}),
+                dcc.RangeSlider(
+                    id='filtro-ano-geral',
+                    min=2018, max=2025, step=1,
+                    value=[2018, 2025],
+                    marks={i: str(i) for i in range(2018, 2026)}
+                )
+            ], style={'padding': '10px 0','fontSize': '14px'}),
         ], style={'width': '45%', 'padding': '10px'}),
 
         html.Div([
