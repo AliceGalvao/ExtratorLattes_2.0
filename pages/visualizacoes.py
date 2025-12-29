@@ -77,8 +77,11 @@ html.Div([
                     min=2018, max=2025, step=1,
                     value=[2018, 2025],
                     marks={i: str(i) for i in range(2018, 2026)}
-                )
+                ),
+                html.Div(id='selected-period-display', style={'marginTop':'6px', 'fontSize':'12px', 'fontWeight':'normal', 'color':'#666'})
             ], style={'padding': '10px 0','fontSize': '14px'}),
+            # DEBUG PANEL (temporary, hidden by default): mostra conteúdo do store-lista-dfs e filtragem por ano
+            html.Div(id='debug-store-visualizacoes', style={'display': 'none', 'fontSize': '12px', 'whiteSpace': 'pre-wrap', 'marginTop': '10px', 'backgroundColor': '#fff8dc', 'padding': '10px', 'borderRadius': '6px'}) ,
         ], style={'width': '45%', 'padding': '10px'}),
 
         html.Div([
@@ -107,9 +110,9 @@ html.Div([
                           style={'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px', 'color': '#2c3e50'})
         ]),
         html.Div(id="filtros-orientacoes-container"),
-        html.Div(id="container-graficos",
+        dcc.Loading(id='loading-orientacoes', children=html.Div(id="container-graficos",
                  style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -129,9 +132,9 @@ html.Div([
                 ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
             ])
         ]),
-        html.Div(id="container-graficos-registros",
+        dcc.Loading(id='loading-registros', children=html.Div(id="container-graficos-registros",
                  style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -151,9 +154,9 @@ html.Div([
                 ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
             ])
         ]),
-        html.Div(id="container-graficos-publicacoes",
+        dcc.Loading(id='loading-publicacoes', children=html.Div(id="container-graficos-publicacoes",
                  style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -172,9 +175,9 @@ html.Div([
                 ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
             ])
         ]),
-        html.Div(id="container-graficos-outros",
+        dcc.Loading(id='loading-outros', children=html.Div(id="container-graficos-outros",
                  style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -210,7 +213,7 @@ MEDIANAS_GERAIS = {
     "PUB. TEC. E ART.": 0.0
 }
 
-def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None, exibir_mediana=False):
+def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
     colunas_map = {
         "mestrado": {"orientacoes": {"concluido": ["O.P MESTRADO CONC."], "andamento": ["O.P MESTRADO AND."]},
                      "coorientacoes": {"concluido": ["C.O MESTRADO CONC."], "andamento": ["C.O MESTRADO AND."]}},
@@ -232,6 +235,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         if df_total.empty: return []
         if 'Nome' in df_total.columns:
             df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
+    # modo 'geral' fica com o comportamento padrão (loop sobre os dfs abaixo). Histórico por ano é tratado no leitor e não altera a vista padrão aqui.
 
         todas_metricas = ["O.P MESTRADO CONC.", "O.P MESTRADO AND.", "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
                           "O.P DOUTORADO CONC.", "O.P DOUTORADO AND.", "C.O DOUTORADO CONC.", "C.O DOUTORADO AND.",
@@ -308,11 +312,37 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                                  style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
+def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
     graficos = []
     df_plot_list = []
 
+
+    if modo == 'geral' and 'historico_geral' in dfs:
+        df_hist = dfs.get('historico_geral')
+        if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
+            df_h = df_hist.copy()
+            df_h['Metrica_upper'] = df_h['Metrica'].astype(str).str.upper()
+            if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
+                try:
+                    inicio, fim = int(ano_range[0]), int(ano_range[1])
+                    df_h = df_h[(df_h['Ano'] >= inicio) & (df_h['Ano'] <= fim)]
+                except Exception:
+                    pass
+            # map historico metrics that correspond to registros
+            regs_upper = set(['PATENTES/SOFTWARES', 'PATENTES', 'REGISTROS DE SW', 'PATENTES/SOFT'])
+            df_sum = df_h[df_h['Metrica_upper'].isin(regs_upper)].groupby('Metrica_upper', as_index=False)['Quantidade'].sum()
+            if not df_sum.empty:
+                df_sum['Metrica_Display'] = df_sum['Metrica_upper'].map(lambda x: 'Patentes/Softwares' if 'PATENT' in x or 'SOFT' in x else x.title())
+                fig = px.bar(df_sum, x='Metrica_Display', y='Quantidade', title='Registros (Geral)', template="plotly_white", text_auto=True)
+                fig.update_traces(textposition='inside')
+                fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                                  xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                largura, altura = ajustar_tamanho_grafico(df_sum)
+                return [html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})]
+
+    # Fallback to original behaviour (per-modo tabling)
     for nome, df in dfs.items():
         if modo == 'geral' and nome == 'total':
             df_tmp = df.copy(); df_tmp['X'] = 'Total'; df_plot_list.append(df_tmp)
@@ -356,7 +386,8 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
                                  style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
+
+def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
     todas_metricas = metricas_publicacoes
     graficos = []
@@ -369,9 +400,33 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
     elif modo == 'geral':
+        # Use historico_geral if present to honor the ano_range filter
+        df_hist = dfs.get('historico_geral')
+        if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
+            df_h = df_hist.copy()
+            df_h['Metrica'] = df_h['Metrica'].astype(str).str.strip()
+            df_h['Metrica_upper'] = df_h['Metrica'].str.upper()
+            if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
+                try:
+                    inicio, fim = int(ano_range[0]), int(ano_range[1])
+                    df_h = df_h[(df_h['Ano'] >= inicio) & (df_h['Ano'] <= fim)]
+                except Exception:
+                    pass
+            pub_set = set(['ARTIGOS', 'LIVROS', 'CAPÍTULOS', 'EVENTOS'])
+            df_sum = df_h[df_h['Metrica_upper'].isin(pub_set)].groupby('Metrica_upper', as_index=False)['Quantidade'].sum()
+            if not df_sum.empty:
+                df_sum['Metrica_Display'] = df_sum['Metrica_upper'].map({'ARTIGOS':'Artigos','LIVROS':'Livros','CAPÍTULOS':'Capítulos','EVENTOS':'Eventos'})
+                fig = px.bar(df_sum, x='Metrica_Display', y='Quantidade', title='Publicações (Geral)', template="plotly_white", text_auto=True)
+                fig.update_traces(textposition='inside')
+                fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                                  xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                largura, altura = ajustar_tamanho_grafico(df_sum)
+                return [html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})]
+        # fallback
         df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
     elif modo == 'grupo':
-        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome != "total"]
+        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome not in ('total','historico_geral') and not str(nome).startswith('_')]
         if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
     else: return [html.Div("Modo inválido.")]
@@ -402,14 +457,14 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                          xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
         largura, altura = ajustar_tamanho_grafico(df_total)
         graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
                                  style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
+
+def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
     metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
     todas_metricas = metricas_outros
     graficos = []
@@ -422,9 +477,36 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
     elif modo == 'geral':
-        df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
+        # tentar usar historico_geral para as métricas de outros (EVENTOS ORGANIZADOS, PUB. TEC. E ART.)
+        df_hist = dfs.get('historico_geral')
+        if not isinstance(df_hist, pd.DataFrame) or df_hist.empty:
+            df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
+        else:
+            df_hist = df_hist.copy()
+            df_hist['Metrica'] = df_hist['Metrica'].astype(str).str.strip()
+            df_hist['Metrica_upper'] = df_hist['Metrica'].str.upper()
+            # no modo 'geral', respeita o filtro de ano se fornecido via ano_range
+            if 'ano_range' in locals() and ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
+                try:
+                    inicio, fim = int(ano_range[0]), int(ano_range[1])
+                    df_hist = df_hist[(df_hist['Ano'] >= inicio) & (df_hist['Ano'] <= fim)]
+                except Exception:
+                    pass
+            met_outros_upper = set(['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
+            df_sum = df_hist[df_hist['Metrica_upper'].isin(met_outros_upper)].groupby('Metrica_upper', as_index=False)['Quantidade'].sum()
+            if df_sum.empty:
+                df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
+            else:
+                df_sum['Metrica_Display'] = df_sum['Metrica_upper'].map({'EVENTOS ORGANIZADOS': 'EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.': 'PUB. TEC. E ART.'})
+                fig = px.bar(df_sum, x='Metrica_Display', y='Quantidade', title='Outros (Geral)', template="plotly_white", text_auto=True)
+                fig.update_traces(textposition='inside')
+                fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                                  xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                largura, altura = ajustar_tamanho_grafico(df_sum)
+                return [html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})]
     elif modo == 'grupo':
-        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome != "total"]
+        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome not in ('total', 'historico_geral') and not str(nome).startswith('_')]
         if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
     else: return [html.Div("Modo inválido.")]
@@ -501,19 +583,21 @@ def resetar_filtros_ao_mudar_modo(modo_selecionado):
     Input("filtro-natureza-orientacoes", "value"),
     Input("filtro-grupo-orientacoes", "value"),
     Input("check-mediana-orientacoes", "value"),  # NOVO INPUT
+    Input('filtro-ano-geral', 'value'),
     State("store-lista-dfs", "data")
 )
 def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natureza,
-                                   grupo_selecionado, check_mediana, stored_data):
+                                   grupo_selecionado, check_mediana, ano_range, stored_data):
+    # prepara dfs filtrados pelo modo selecionado
     if not stored_data or "orientacoes" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas, exibir_mediana=exibir)
+    return gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
 
 
 @callback(
@@ -522,18 +606,19 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-registros", "value"),
     Input("check-mediana-registros", "value"),  # NOVO INPUT
+    Input('filtro-ano-geral', 'value'),
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
+def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, check_mediana, ano_range, stored_data):
     if not stored_data or "registros" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_registros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+    return gerar_graficos_registros(dfs, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
 
 
 @callback(
@@ -542,18 +627,19 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-publicacoes", "value"),
     Input("check-mediana-publicacoes", "value"),  # NOVO INPUT
+    Input('filtro-ano-geral', 'value'),
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
+def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, check_mediana, ano_range, stored_data):
     if not stored_data or "publicacoes" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+    return gerar_graficos_publicacoes(dfs, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
 
 
 @callback(
@@ -562,18 +648,84 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-outros", "value"),
     Input("check-mediana-outros", "value"),  # NOVO INPUT
+    Input('filtro-ano-geral', 'value'),
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
+def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check_mediana, ano_range, stored_data):
     if not stored_data or "outros" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_outros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+    return gerar_graficos_outros(dfs, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
+
+@callback(
+    Output('debug-store-visualizacoes', 'children'),
+    Input('filtro-ano-geral', 'value'),
+    Input('store-lista-dfs', 'data')
+)
+def debug_store_visualizacoes(ano_range, stored_data):
+    """Exibe diagnóstico rápido do store para ajudar a entender por que os gráficos não mudam."""
+    if not stored_data:
+        return 'store-lista-dfs vazio ou não preenchido.'
+    try:
+        dfs, metricas = parse_stored_data(stored_data)
+    except Exception as e:
+        return f'Erro parse_stored_data: {e}'
+
+    out = []
+    try:
+        keys = list(stored_data.keys()) if isinstance(stored_data, dict) else []
+        out.append(f'Keys no store: {keys}')
+        out.append(f"_meta.metricas (parse): {metricas}")
+
+        if 'historico_geral' in dfs:
+            df_hist = dfs.get('historico_geral')
+            if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
+                out.append(f"historico_geral shape: {df_hist.shape}")
+                out.append('historico_geral head:')
+                out.append(df_hist.head(10).to_string())
+                if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
+                    try:
+                        inicio, fim = int(ano_range[0]), int(ano_range[1])
+                        df_f = df_hist[(df_hist['Ano'] >= inicio) & (df_hist['Ano'] <= fim)]
+                        out.append(f'-> após filtro {inicio}-{fim} shape: {df_f.shape}')
+                        if not df_f.empty:
+                            out.append('\nSoma por Metrica no intervalo:')
+                            out.append(df_f.groupby('Metrica', as_index=False)['Quantidade'].sum().to_string(index=False))
+                        else:
+                            out.append('-> nenhum registro no intervalo selecionado')
+                    except Exception as e:
+                        out.append(f'Erro ao aplicar filtro por ano: {e}')
+            else:
+                out.append('historico_geral presente, mas vazio ou inválido (não DataFrame).')
+        else:
+            out.append('historico_geral NÃO presente nas keys do store.')
+    except Exception as e:
+        out.append(f'Erro inesperado ao analisar store: {e}')
+
+    # adicional: mostra o período selecionado de forma amigável
+    periodo_text = f"Período selecionado: {ano_range[0]} — {ano_range[1]}" if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2 else 'Período selecionado: —'
+    out.insert(1, periodo_text)
+
+    return html.Pre('\n'.join(out))
+
+
+@callback(
+    Output('selected-period-display', 'children'),
+    Input('filtro-ano-geral', 'value')
+)
+def mostrar_periodo(ano_range):
+    if not ano_range or not isinstance(ano_range, (list, tuple)) or len(ano_range) != 2:
+        return ''
+    try:
+        inicio, fim = int(ano_range[0]), int(ano_range[1])
+        return f"Período selecionado: {inicio} — {fim}"
+    except Exception:
+        return ''
 
 @callback(
     Output("filtros-orientacoes-container", "children"),
@@ -741,6 +893,15 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
     publicacoes_present = any(m in metricas for m in ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS'])
     outros_present = any(m in metricas for m in ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
 
+    # também considera o histórico geral (quando presente) para determinar presença de categorias
+    df_hist = dfs.get('historico_geral')
+    if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
+        hist_metrics = set(df_hist['Metrica'].astype(str).unique())
+        orientacoes_present = orientacoes_present or bool(hist_metrics & set(['Mestrado', 'Doutorado', 'IC', 'TCC']))
+        registros_present = registros_present or ('Patentes/Softwares' in hist_metrics)
+        publicacoes_present = publicacoes_present or bool(hist_metrics & set(['Artigos', 'Livros', 'Capítulos', 'Eventos']))
+        outros_present = outros_present or bool(hist_metrics & set(['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']))
+
     options_all = [
         {'label': 'Registros', 'value': 'registros'},
         {'label': 'Orientações', 'value': 'orientacoes'},
@@ -825,6 +986,15 @@ def toggle_sections(selected_viz, stored_data):
     publicacoes_present = any(m in metricas for m in ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS'])
     outros_present = any(m in metricas for m in ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
 
+    # também considera o histórico geral para definir presença de categorias
+    df_hist = dfs.get('historico_geral')
+    if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
+        hist_metrics = set(df_hist['Metrica'].astype(str).unique())
+        orientacoes_present = orientacoes_present or bool(hist_metrics & set(['Mestrado', 'Doutorado', 'IC', 'TCC']))
+        registros_present = registros_present or ('Patentes/Softwares' in hist_metrics)
+        publicacoes_present = publicacoes_present or bool(hist_metrics & set(['Artigos', 'Livros', 'Capítulos', 'Eventos']))
+        outros_present = outros_present or bool(hist_metrics & set(['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']))
+
     style_orientacoes = default_style if ("orientacoes" in selected_viz and orientacoes_present) else hidden
     style_registros = default_style if ("registros" in selected_viz and registros_present) else hidden
     style_publicacoes = default_style if ("publicacoes" in selected_viz and publicacoes_present) else hidden
@@ -894,7 +1064,7 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
     elif modo == 'professor':
         # se um grupo foi selecionado usa só esse grupo # nao esta funcionando
         lista_dfs_professores = []
-        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
+        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k not in ("total", "historico_geral") and not str(k).startswith('_')]
 
         for k in grupos_para_usar:
             df = dfs[k]

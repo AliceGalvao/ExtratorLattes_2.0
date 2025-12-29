@@ -122,7 +122,30 @@ class Leitor:
         mapear_anos(capitulos_ISBN, 'Capítulos')
         mapear_anos(orientacoes_mestrado_concluidas, 'Mestrado')
         mapear_anos(orientacoes_doutorado_concluidas, 'Doutorado')
+        # Inclui orientações de IC e TCC no histórico geral
+        try:
+            mapear_anos(orientacoes_ic_concluidas + orientacoes_ic_andamento, 'IC')
+        except Exception:
+            # caso uma das listas não exista ou seja vazia, tenta mapear as que existirem
+            try:
+                mapear_anos(orientacoes_ic_concluidas, 'IC')
+            except Exception:
+                pass
+            try:
+                mapear_anos(orientacoes_ic_andamento, 'IC')
+            except Exception:
+                pass
+        try:
+            mapear_anos(orientacoes_tcc_concluidas, 'TCC')
+        except Exception:
+            pass
+
+        # Eventos e publicações técnicas/artísticas
         mapear_anos(trabalhos_eventos, 'Eventos')
+        mapear_anos(eventos_organizados, 'EVENTOS ORGANIZADOS')
+        mapear_anos(tecnicos_artisticos_nao_indexados, 'PUB. TEC. E ART.')
+
+        # Patentes/softwares
         mapear_anos(patentes, 'Patentes/Softwares')
         mapear_anos(softwares, 'Patentes/Softwares')
 
@@ -213,6 +236,7 @@ class Leitor:
             lista_dfs = []
             programas_totais = []
             programas_totais_eventos = []
+            historico_acumulado = []
 
             if os.path.exists(PASTA_PROGRAMAS):
                 programas = os.listdir(PASTA_PROGRAMAS)
@@ -235,6 +259,11 @@ class Leitor:
                 dados_pesquisadores = [p.series_eixo_ensino() for p in pesquisadores_programa]
                 df = pd.DataFrame(dados_pesquisadores)
                 df = df.loc[:, ~df.columns.duplicated()]
+
+                # colete historico bruto dos pesquisadores do programa
+                for p in pesquisadores_programa:
+                    if hasattr(p, 'historico_bruto'):
+                        historico_acumulado.extend(p.historico_bruto)
 
                 # linha de totais (soma apenas das colunas numéricas)
                 linha_programa_full = {col: df[col].sum() for col in df.columns if df[col].dtype in [int, float]}
@@ -287,6 +316,36 @@ class Leitor:
             lista_dfs.append(['total', df_total])
 
             dict_retorno = {df[0]: df[1].to_json(orient='split') for df in lista_dfs}
+
+            # se temos histórico acumulado, transforma e adiciona ao dicionário de retorno
+            df_historico_geral = pd.DataFrame(historico_acumulado)
+            if not df_historico_geral.empty:
+                # Normaliza e canonicaliza nomes de métricas para evitar discrepâncias (ex.: espaços, maiúsculas diferentes, variantes)
+                df_historico_geral['Metrica'] = df_historico_geral['Metrica'].astype(str).str.strip()
+                # Mapa de canonicalização (chave: upper stripped) -> valor padronizado
+                canonical_map = {
+                    'ARTIGOS': 'Artigos',
+                    'LIVROS': 'Livros',
+                    'CAPITULOS': 'Capítulos',
+                    'CAPÍTULOS': 'Capítulos',
+                    'MESTRADO': 'Mestrado',
+                    'DOUTORADO': 'Doutorado',
+                    'IC': 'IC',
+                    'TCC': 'TCC',
+                    'EVENTOS': 'Eventos',
+                    'EVENTOS ORGANIZADOS': 'EVENTOS ORGANIZADOS',
+                    'PUB. TEC. E ART.': 'PUB. TEC. E ART.',
+                    'PATENTES/SOFTWARES': 'Patentes/Softwares',
+                    'PATENTES': 'Patentes/Softwares',
+                    'SOFTWARES': 'Patentes/Softwares'
+                }
+                df_historico_geral['Metrica_upper'] = df_historico_geral['Metrica'].str.upper().str.replace('\u00ad','')
+                df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
+                df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
+
+                # Agrupa por Ano e Métrica padronizada
+                df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica']).size().reset_index(name='Quantidade')
+                dict_retorno['historico_geral'] = df_historico_geral.to_json(orient='split')
 
             # limpa pasta programas
             if os.path.exists(PASTA_PROGRAMAS):
@@ -362,6 +421,28 @@ class Leitor:
         }
 
         if not df_historico_geral.empty:
+            # Normaliza e canonicaliza os nomes de métrica antes de agrupar
+            df_historico_geral['Metrica'] = df_historico_geral['Metrica'].astype(str).str.strip()
+            canonical_map = {
+                'ARTIGOS': 'Artigos',
+                'LIVROS': 'Livros',
+                'CAPITULOS': 'Capítulos',
+                'CAPÍTULOS': 'Capítulos',
+                'MESTRADO': 'Mestrado',
+                'DOUTORADO': 'Doutorado',
+                'IC': 'IC',
+                'TCC': 'TCC',
+                'EVENTOS': 'Eventos',
+                'EVENTOS ORGANIZADOS': 'EVENTOS ORGANIZADOS',
+                'PUB. TEC. E ART.': 'PUB. TEC. E ART.',
+                'PATENTES/SOFTWARES': 'Patentes/Softwares',
+                'PATENTES': 'Patentes/Softwares',
+                'SOFTWARES': 'Patentes/Softwares'
+            }
+            df_historico_geral['Metrica_upper'] = df_historico_geral['Metrica'].str.upper().str.replace('\u00ad','')
+            df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
+            df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
+
             # Agrupa por Ano e Métrica para somar as quantidades
             df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica']).size().reset_index(name='Quantidade')
 
