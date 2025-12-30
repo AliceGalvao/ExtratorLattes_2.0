@@ -5,6 +5,7 @@ import pandas as pd
 import io
 import plotly.express as px
 from dash.exceptions import PreventUpdate
+from datetime import datetime
 
 dash.register_page(__name__, path='/visualizacoes', name="Visualizações")
 import json
@@ -71,12 +72,12 @@ html.Div([
                 style={'display': 'flex', 'gap': '30px', 'flexWrap': 'wrap', 'fontSize': '14px'}
             ),
 html.Div([
-                html.Label("Filtrar Período (Modo Geral):", style={'fontWeight': 'bold', 'marginBottom': '10px'}),
+                html.Label("Filtrar Período:", style={'fontWeight': 'bold', 'marginBottom': '10px'}),
                 dcc.RangeSlider(
                     id='filtro-ano-geral',
-                    min=2018, max=2025, step=1,
-                    value=[2018, 2025],
-                    marks={i: str(i) for i in range(2018, 2026)}
+                    min=int(datetime.now().year) - 10, max=int(datetime.now().year), step=1,
+                    value=[int(datetime.now().year) - 10, int(datetime.now().year)],
+                    marks={i: str(i) for i in range(int(datetime.now().year) - 10, int(datetime.now().year + 1))}
                 ),
                 html.Div(id='selected-period-display', style={'marginTop':'6px', 'fontSize':'12px', 'fontWeight':'normal', 'color':'#666'})
             ], style={'padding': '10px 0','fontSize': '14px'}),
@@ -116,7 +117,6 @@ html.Div([
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
-    # --- SEÇÃO REGISTROS ---
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div([
@@ -138,7 +138,6 @@ html.Div([
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
-    # --- SEÇÃO PUBLICAÇÕES ---
     html.Div(id="section-publicacoes", children=[
         html.H3("Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div([
@@ -160,7 +159,6 @@ html.Div([
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
-    # --- SEÇÃO OUTROS ---
     html.Div(id="section-outros", children=[
         html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div([
