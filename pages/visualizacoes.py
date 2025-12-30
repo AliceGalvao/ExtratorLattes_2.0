@@ -82,7 +82,7 @@ html.Div([
                 html.Div(id='selected-period-display', style={'marginTop':'6px', 'fontSize':'12px', 'fontWeight':'normal', 'color':'#666'})
             ], style={'padding': '10px 0','fontSize': '14px'}),
             # DEBUG PANEL (temporary, hidden by default): mostra conteúdo do store-lista-dfs e filtragem por ano
-            html.Div(id='debug-store-visualizacoes', style={'display': 'none', 'fontSize': '12px', 'whiteSpace': 'pre-wrap', 'marginTop': '10px', 'backgroundColor': '#fff8dc', 'padding': '10px', 'borderRadius': '6px'}) ,
+            html.Div(id='debug-store-visualizacoes', style={'fontSize': '12px', 'whiteSpace': 'pre-wrap', 'marginTop': '10px', 'backgroundColor': '#fff8dc', 'padding': '10px', 'borderRadius': '6px'}) ,
         ], style={'width': '45%', 'padding': '10px'}),
 
         html.Div([
