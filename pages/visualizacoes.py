@@ -197,7 +197,7 @@ MEDIANAS_GERAIS = {
     "REGISTROS DE SW": 0.0,
     "PATENTES": 0.0,
     # Outros
-    "EVENTOS ORGANIZADOS": 1,
+    "EVENTOS ORGANIZADOS": 1.0,
     "PUB. TEC. E ART.": 0.0
 }
 
@@ -280,14 +280,19 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                     med_g = MEDIANAS_GERAIS.get(t, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                    else:
-                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
+                    else:
+                        # Padronizado para :.1f
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
+                                      annotation_position='top right')
+
                         if med_g is not None:
+                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
@@ -328,14 +333,19 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
                     med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                    else:
-                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
+                    else:
+                        # Padronizado para :.1f
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
+                                      annotation_position='top right')
+
                         if med_g is not None:
+                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
@@ -381,14 +391,19 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
                     med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                    else:
-                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
+                    else:
+                        # Padronizado para :.1f
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
+                                      annotation_position='top right')
+
                         if med_g is not None:
+                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
@@ -434,14 +449,19 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
                     med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
-                    else:
-                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
+                    else:
+                        # Padronizado para :.1f
+                        fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
+                                      annotation_position='top right')
+
                         if med_g is not None:
+                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
