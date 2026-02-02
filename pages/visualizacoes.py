@@ -121,8 +121,15 @@ html.Div([
             ])
         ]),
         html.Div(id="container-graficos-registros",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -143,8 +150,15 @@ html.Div([
             ])
         ]),
         html.Div(id="container-graficos-publicacoes",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -164,8 +178,15 @@ html.Div([
             ])
         ]),
         html.Div(id="container-graficos-outros",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -298,7 +319,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         fig.update_traces(textposition='inside')
         fig.update_layout(template="plotly_white", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=ordem),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=65, b=60))
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_t, altura_min=350)
         graficos.append(html.Div(
             dcc.Graph(
@@ -364,7 +385,7 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_melt["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                          yaxis=dict(title=None),margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total, altura_min=350)
         graficos.append(html.Div(
             dcc.Graph(
@@ -435,7 +456,7 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total)
         graficos.append(html.Div(
             dcc.Graph(
@@ -506,7 +527,7 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total)
         graficos.append(html.Div(
             dcc.Graph(
