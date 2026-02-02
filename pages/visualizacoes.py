@@ -877,15 +877,20 @@ def download_excel(n_clicks, stored_data):
 
 mapa_professores = {}
 
+
 def anonimizar_nomes(df, coluna_nome='Nome'):
-    global mapa_professores
+    mapa_local = {}
+
     if coluna_nome not in df.columns:
         return df.copy()
+
     df_anon = df.copy()
+
     for nome in df[coluna_nome].dropna().unique():
-        if nome not in mapa_professores:
-            mapa_professores[nome] = f"P{len(mapa_professores) + 1}"
-    df_anon[coluna_nome] = df[coluna_nome].map(mapa_professores)
+        if nome not in mapa_local:
+            mapa_local[nome] = f"P{len(mapa_local) + 1}"
+
+    df_anon[coluna_nome] = df[coluna_nome].map(mapa_local)
     return df_anon
 
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
