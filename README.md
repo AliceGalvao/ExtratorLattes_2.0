@@ -45,4 +45,5 @@ Sobre o deploy:
 - sudo systemctl status dash_app.service
 - systemctl daemon-reload
 OBS:
-Para facilitar a adição do repositório na máquina: Deixar o rep público quando clonar do GitHub
+- Para facilitar a adição do repositório na máquina: Deixar o rep público quando clonar do GitHub
+- Deve ser atualizado anualmente para garantir que os anos de corte estejam atualizados e as medianas também
