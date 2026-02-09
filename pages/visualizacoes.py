@@ -320,8 +320,8 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         fig.update_traces(textposition='inside')
         fig.update_layout(template="plotly_white", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=ordem),
-                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
-        largura, altura = ajustar_tamanho_grafico(df_t, altura_min=350)
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=100, b=80))
+        largura, altura = ajustar_tamanho_grafico(df_plot, altura_min=350)
         graficos.append(html.Div(
             dcc.Graph(
                 figure=fig,
