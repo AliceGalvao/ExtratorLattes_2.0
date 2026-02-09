@@ -278,10 +278,11 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                     cols_and = colunas_map[t][natureza]["andamento"]
                 val_conc = df[cols_conc].sum(axis=1).sum() if cols_conc and all(c in df.columns for c in cols_conc) else 0
                 val_and = df[cols_and].sum(axis=1).sum() if cols_and and all(c in df.columns for c in cols_and) else 0
+                identificador = 'Total' if modo == 'geral' and grupo == 'total' else grupo
                 if status in ("concluido", "ambos"):
-                    dados_plot.append({"Identificador": grupo, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
+                    dados_plot.append({"Identificador": identificador, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
                 if status in ("andamento", "ambos"):
-                    dados_plot.append({"Identificador": grupo, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
+                    dados_plot.append({"Identificador": identificador, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
 
     df_plot = pd.DataFrame(dados_plot)
     graficos = []
@@ -358,6 +359,12 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
     for col in metricas_registros:
         if col not in df_total.columns: continue
         df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]}).sort_values("Quantidade", ascending=False)
+        
+        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
+        if modo == 'professor':
+            mapa_renomeacao = {df_melt['X'].iloc[i]: f'P{i+1}' for i in range(len(df_melt))}
+            df_melt['X'] = df_melt['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -429,6 +436,12 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
+        
+        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
+        if modo == 'professor':
+            mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
+            df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -500,6 +513,12 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
+        
+        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
+        if modo == 'professor':
+            mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
+            df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -988,7 +1007,6 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         for k in grupos_para_usar:
             df = dfs[k]
             df_filtrado = df.iloc[:-1].copy()  # remove linha de total
-            df_filtrado = anonimizar_nomes(df_filtrado)
             df_filtrado['Grupo/Programa'] = k
             lista_dfs_professores.append(df_filtrado)
 
