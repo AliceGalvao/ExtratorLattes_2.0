@@ -104,7 +104,6 @@ html.Div([
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
-    # --- SEÇÃO REGISTROS ---
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div([
@@ -121,8 +120,15 @@ html.Div([
             ])
         ]),
         html.Div(id="container-graficos-registros",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -143,8 +149,15 @@ html.Div([
             ])
         ]),
         html.Div(id="container-graficos-publicacoes",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -164,8 +177,15 @@ html.Div([
             ])
         ]),
         html.Div(id="container-graficos-outros",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'})
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -257,10 +277,11 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                     cols_and = colunas_map[t][natureza]["andamento"]
                 val_conc = df[cols_conc].sum(axis=1).sum() if cols_conc and all(c in df.columns for c in cols_conc) else 0
                 val_and = df[cols_and].sum(axis=1).sum() if cols_and and all(c in df.columns for c in cols_and) else 0
+                identificador = 'Total' if modo == 'geral' and grupo == 'total' else grupo
                 if status in ("concluido", "ambos"):
-                    dados_plot.append({"Identificador": grupo, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
+                    dados_plot.append({"Identificador": identificador, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
                 if status in ("andamento", "ambos"):
-                    dados_plot.append({"Identificador": grupo, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
+                    dados_plot.append({"Identificador": identificador, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
 
     df_plot = pd.DataFrame(dados_plot)
     graficos = []
@@ -324,6 +345,12 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
     for col in metricas_registros:
         if col not in df_total.columns: continue
         df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]}).sort_values("Quantidade", ascending=False)
+        
+        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
+        if modo == 'professor':
+            mapa_renomeacao = {df_melt['X'].iloc[i]: f'P{i+1}' for i in range(len(df_melt))}
+            df_melt['X'] = df_melt['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -351,11 +378,24 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_melt["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                          yaxis=dict(title=None),margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total, altura_min=350)
-        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
-
+        graficos.append(html.Div(
+            dcc.Graph(
+                figure=fig,
+                config={'responsive': True},
+                style={'height': altura, 'width': largura}
+            ),
+            style={
+                'flex': '0 0 auto',
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'padding': '15px',
+                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
+                'marginRight': '15px',
+                'minWidth': largura
+            }
+        ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
@@ -382,6 +422,12 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
+        
+        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
+        if modo == 'professor':
+            mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
+            df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -409,11 +455,24 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total)
-        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
-
+        graficos.append(html.Div(
+            dcc.Graph(
+                figure=fig,
+                config={'responsive': True},
+                style={'height': altura, 'width': '100%'}
+            ),
+            style={
+                'flex': '1 1 auto',
+                'minWidth': '300px',
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'padding': '15px',
+                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
+                'marginRight': '15px',
+            }
+        ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
@@ -440,6 +499,12 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
+        
+        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
+        if modo == 'professor':
+            mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
+            df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -467,11 +532,24 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total)
-        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
-
+        graficos.append(html.Div(
+            dcc.Graph(
+                figure=fig,
+                config={'responsive': True},
+                style={'height': altura, 'width': largura}
+            ),
+            style={
+                'flex': '0 0 auto',  #
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'padding': '15px',
+                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
+                'marginRight': '15px',
+                'minWidth': largura
+            }
+        ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 @callback(
@@ -915,7 +993,6 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         for k in grupos_para_usar:
             df = dfs[k]
             df_filtrado = df.iloc[:-1].copy()  # remove linha de total
-            df_filtrado = anonimizar_nomes(df_filtrado)
             df_filtrado['Grupo/Programa'] = k
             lista_dfs_professores.append(df_filtrado)
 
