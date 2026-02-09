@@ -104,7 +104,6 @@ html.Div([
     ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
-    # --- SEÇÃO REGISTROS ---
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div([
@@ -194,15 +193,12 @@ html.Div([
     dcc.Store(id='store-modo-atual')
 ])
 
-def ajustar_tamanho_grafico(df, min_barras=6, altura_por_barra=40, altura_min=350):
-    """
-    Calcula o tamanho responsivo do gráfico.
-    - Largura: 100% (usa flex container)
-    - Altura: Proporcional ao número de barras, sem máximo rígido
-    """
+def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=65, altura_por_barra=50,
+                            largura_max=1000, altura_max=500, altura_min=350):
     n_barras = max(len(df), min_barras)
-    altura = max(n_barras * altura_por_barra, altura_min)
-    return "100%", f"{altura}px"
+    largura = min(n_barras * largura_por_barra, largura_max)
+    altura = max(min(n_barras * altura_por_barra, altura_max), altura_min)
+    return f"{largura}px", f"{altura}px"
 
 # Valores de referência para o cálculo da "Mediana Geral"
 MEDIANAS_GERAIS = {
@@ -323,26 +319,11 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         fig.update_traces(textposition='inside')
         fig.update_layout(template="plotly_white", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=ordem),
-                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=100, b=80))
-        # Para orientações, usar apenas o número de identificadores únicos, não o total de linhas
-        df_size = pd.DataFrame({'Identificador': ordem})
-        largura, altura = ajustar_tamanho_grafico(df_size, altura_min=350)
-        graficos.append(html.Div(
-            dcc.Graph(
-                figure=fig,
-                config={'responsive': True},
-                style={'height': altura, 'width': '100%'}
-            ),
-            style={
-                'flex': '1 1 auto',  # Permite que o card se expanda/contraia responsivamente
-                'minWidth': '300px',  # Mínimo responsivo
-                'backgroundColor': 'white',
-                'borderRadius': '12px',
-                'padding': '15px',
-                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
-                'marginRight': '15px',
-            }
-        ))
+                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=65, b=60))
+        largura, altura = ajustar_tamanho_grafico(df_t, altura_min=350)
+        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
+                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
+
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
@@ -403,16 +384,16 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
             dcc.Graph(
                 figure=fig,
                 config={'responsive': True},
-                style={'height': altura, 'width': '100%'}
+                style={'height': altura, 'width': largura}
             ),
             style={
-                'flex': '1 1 auto',
-                'minWidth': '300px',
+                'flex': '0 0 auto',
                 'backgroundColor': 'white',
                 'borderRadius': '12px',
                 'padding': '15px',
                 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
                 'marginRight': '15px',
+                'minWidth': largura
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
@@ -557,16 +538,16 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
             dcc.Graph(
                 figure=fig,
                 config={'responsive': True},
-                style={'height': altura, 'width': '100%'}
+                style={'height': altura, 'width': largura}
             ),
             style={
-                'flex': '1 1 auto',
-                'minWidth': '300px',
+                'flex': '0 0 auto',  #
                 'backgroundColor': 'white',
                 'borderRadius': '12px',
                 'padding': '15px',
                 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
                 'marginRight': '15px',
+                'minWidth': largura
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
