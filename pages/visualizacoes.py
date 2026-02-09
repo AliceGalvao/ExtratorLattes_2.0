@@ -194,12 +194,15 @@ html.Div([
     dcc.Store(id='store-modo-atual')
 ])
 
-def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=65, altura_por_barra=50,
-                            largura_max=1000, altura_max=500, altura_min=350):
+def ajustar_tamanho_grafico(df, min_barras=6, altura_por_barra=40, altura_min=350):
+    """
+    Calcula o tamanho responsivo do gráfico.
+    - Largura: 100% (usa flex container)
+    - Altura: Proporcional ao número de barras, sem máximo rígido
+    """
     n_barras = max(len(df), min_barras)
-    largura = min(n_barras * largura_por_barra, largura_max)
-    altura = max(min(n_barras * altura_por_barra, altura_max), altura_min)
-    return f"{largura}px", f"{altura}px"
+    altura = max(n_barras * altura_por_barra, altura_min)
+    return "100%", f"{altura}px"
 
 # Valores de referência para o cálculo da "Mediana Geral"
 MEDIANAS_GERAIS = {
@@ -328,16 +331,16 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
             dcc.Graph(
                 figure=fig,
                 config={'responsive': True},
-                style={'height': altura, 'width': largura}
+                style={'height': altura, 'width': '100%'}
             ),
             style={
-                'flex': '0 0 auto',  # Impede que a caixa esprema o gráfico
+                'flex': '1 1 auto',  # Permite que o card se expanda/contraia responsivamente
+                'minWidth': '300px',  # Mínimo responsivo
                 'backgroundColor': 'white',
                 'borderRadius': '12px',
                 'padding': '15px',
                 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
-                'marginRight': '15px',  # Dá espaço entre os cards
-                'minWidth': largura  # Força a caixa branca a ter no mínimo a largura do gráfico
+                'marginRight': '15px',
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
@@ -400,16 +403,16 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
             dcc.Graph(
                 figure=fig,
                 config={'responsive': True},
-                style={'height': altura, 'width': largura}
+                style={'height': altura, 'width': '100%'}
             ),
             style={
-                'flex': '0 0 auto',
+                'flex': '1 1 auto',
+                'minWidth': '300px',
                 'backgroundColor': 'white',
                 'borderRadius': '12px',
                 'padding': '15px',
                 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
                 'marginRight': '15px',
-                'minWidth': largura
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
@@ -477,16 +480,16 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
             dcc.Graph(
                 figure=fig,
                 config={'responsive': True},
-                style={'height': altura, 'width': largura}
+                style={'height': altura, 'width': '100%'}
             ),
             style={
-                'flex': '0 0 auto',  #
+                'flex': '1 1 auto',
+                'minWidth': '300px',
                 'backgroundColor': 'white',
                 'borderRadius': '12px',
                 'padding': '15px',
                 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
                 'marginRight': '15px',
-                'minWidth': largura
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
@@ -554,16 +557,16 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
             dcc.Graph(
                 figure=fig,
                 config={'responsive': True},
-                style={'height': altura, 'width': largura}
+                style={'height': altura, 'width': '100%'}
             ),
             style={
-                'flex': '0 0 auto',
+                'flex': '1 1 auto',
+                'minWidth': '300px',
                 'backgroundColor': 'white',
                 'borderRadius': '12px',
                 'padding': '15px',
                 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
                 'marginRight': '15px',
-                'minWidth': largura
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
