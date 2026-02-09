@@ -290,6 +290,14 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         df_t = df_plot[df_plot["Tipo"] == t]
         if df_t.empty: continue
         ordem = df_t.groupby("Identificador")["Valor"].sum().sort_values(ascending=False).index.tolist()
+        
+        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
+        if modo == 'professor':
+            mapa_renomeacao = {ordem[i]: f'P{i+1}' for i in range(len(ordem))}
+            df_t = df_t.copy()
+            df_t['Identificador'] = df_t['Identificador'].map(mapa_renomeacao)
+            ordem = [mapa_renomeacao[x] for x in ordem]
+        
         fig = px.bar(df_t, x="Identificador", y="Valor", color="Status", barmode="stack", title=t.upper(), text_auto=True)
 
         # LÓGICA DE MEDIANA CONDICIONAL
