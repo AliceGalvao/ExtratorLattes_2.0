@@ -326,4 +326,3 @@ class StorageLattes:
 if __name__ == "__main__":
     armazenador = StorageLattes()
     armazenador.leitor_dos_resultados()
-
