@@ -177,7 +177,7 @@ class StorageLattes:
 
             else:
                 dict_planilha.update({
-                    key: []})  # se a área não possuir os ids associados aos docentes, atualiza-se o dicionário com a seguinte mensagem
+                                         key: []})  # se a área não possuir os ids associados aos docentes, atualiza-se o dicionário com a seguinte mensagem
 
         logger.info(f"[.] Dados recebidos da planilha: {dict_planilha}")
         return dict_planilha
@@ -222,7 +222,7 @@ class StorageLattes:
 
             logger.info(f"[.] Baixando curriculos de {len(ids)} pesquisadores")
 
-            #self.baixar_dados_docentes(ids, PASTA_EXTRATOR)
+            self.baixar_dados_docentes(ids, PASTA_EXTRATOR)
             self.arquivos_extrator = os.listdir(PASTA_EXTRATOR)
 
             if len(ids) != 0:
@@ -245,13 +245,13 @@ class StorageLattes:
                             faltantes.append(nome_zip.split('.')[0])
 
                 logger.info(f'[.] Arquivos na pasta: {os.listdir(path_programa)}')
-        """
+        
         if os.path.exists(PASTA_EXTRATOR):
             if os.path.isdir(PASTA_EXTRATOR):
                 shutil.rmtree(PASTA_EXTRATOR)  # Remove o diretório e seu conteúdo
             else:
                 os.remove(PASTA_EXTRATOR)  # Remove o arquivo
-        """
+        
         erros_extracao = []  # Criando uma lista de erros de extração, mesmo que esteja vazia para evitor erros
         return faltantes, erros_extracao
 
