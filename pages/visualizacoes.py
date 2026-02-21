@@ -132,7 +132,6 @@ html.Div([
     ], style={"margin": "20px auto", "padding": "24px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1700px"}),
 
-    # --- SEÇÃO PUBLICAÇÕES ---
     html.Div(id="section-publicacoes", children=[
         html.H3("Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div([
@@ -161,7 +160,6 @@ html.Div([
     ], style={"margin": "10px auto", "padding": "14px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1700px"}),
 
-    # --- SEÇÃO OUTROS ---
     html.Div(id="section-outros", children=[
         html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
         html.Div([
@@ -205,13 +203,11 @@ def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=55, altura_por_b
     except Exception:
         n_barras = min_barras
 
-    # Altura baseada em número de itens
     if n_barras < 6:
         altura_calculada = 500
     else:
         altura_calculada = 550
 
-    # Largura proporcional
     largura_calculada = int(n_barras * largura_por_barra)
 
     largura = int(max(largura_min, min(largura_max, largura_calculada)))
@@ -309,7 +305,6 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         if df_t.empty: continue
         ordem = df_t.groupby("Identificador")["Valor"].sum().sort_values(ascending=False).index.tolist()
         
-        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
         if modo == 'professor':
             mapa_renomeacao = {ordem[i]: f'P{i+1}' for i in range(len(ordem))}
             df_t = df_t.copy()
@@ -318,7 +313,6 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         
         fig = px.bar(df_t, x="Identificador", y="Valor", color="Status", barmode="stack", title=t.upper(), text_auto=True)
 
-        # LÓGICA DE MEDIANA CONDICIONAL
         if exibir_mediana:
             try:
                 sums = df_t.groupby("Identificador")["Valor"].sum()
@@ -330,13 +324,11 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                                       annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
                     else:
-                        # Padronizado para :.1f
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
                                       annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
 
                         if med_g is not None:
-                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
                                           annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
                                           annotation_position='top right')
@@ -347,10 +339,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=ordem),
                           yaxis=dict(title=None), margin=dict(l=20, r=20, t=65, b=60))
         largura, altura = ajustar_tamanho_grafico(df_t, altura_min=200)
-        # Mantemos o cartão como um elemento fixo no eixo horizontal (lado-a-lado) com
-        # `flex: 0 0 auto` e definimos `minWidth` para forçar scroll horizontal quando
-        # houver muitos cartões. O gráfico interno usa `width: 100%` para se ajustar ao
-        # tamanho do cartão e `height` fixo em pixels calculado acima.
+
         graficos.append(html.Div(
             dcc.Graph(figure=fig, config={'responsive': True}, style={'width': '100%', 'height': altura}),
             style={'flex': '0 1 auto', 'minWidth': largura, 'maxWidth': '1000px', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)', 'overflowY': 'auto'}
@@ -378,7 +367,6 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
         if col not in df_total.columns: continue
         df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]}).sort_values("Quantidade", ascending=False)
         
-        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
         if modo == 'professor':
             mapa_renomeacao = {df_melt['X'].iloc[i]: f'P{i+1}' for i in range(len(df_melt))}
             df_melt['X'] = df_melt['X'].map(mapa_renomeacao)
@@ -395,13 +383,11 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
                                       annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
                     else:
-                        # Padronizado para :.1f
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
                                       annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
 
                         if med_g is not None:
-                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
                                           annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
                                           annotation_position='top right')
@@ -412,7 +398,6 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_melt["X"]),
                           yaxis=dict(title=None),margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total, altura_min=200)
-        # garantir tamanho mínimo razoável para as caixas de 'Registros'
         try:
             largura_val = max(int(largura.replace('px', '')), 420)
         except Exception:
@@ -465,7 +450,6 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
         
-        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
         if modo == 'professor':
             mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
             df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
@@ -482,13 +466,11 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
                                       annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
                     else:
-                        # Padronizado para :.1f
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
                                       annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
 
                         if med_g is not None:
-                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
                                           annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
                                           annotation_position='top right')
@@ -551,7 +533,6 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
         
-        # No modo professor, renomear o eixo X para P1, P2, P3, etc. DEPOIS de ordenar
         if modo == 'professor':
             mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
             df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
@@ -568,13 +549,11 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
                                       annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
                                       annotation_position='top right')
                     else:
-                        # Padronizado para :.1f
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
                                       annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
 
                         if med_g is not None:
-                            # Padronizado para :.1f
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
                                           annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
                                           annotation_position='top right')
@@ -659,7 +638,7 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-registros", "value"),
-    Input("check-mediana-registros", "value"),  # NOVO INPUT
+    Input("check-mediana-registros", "value"), 
     State("store-lista-dfs", "data")
 )
 def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
@@ -679,7 +658,7 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-publicacoes", "value"),
-    Input("check-mediana-publicacoes", "value"),  # NOVO INPUT
+    Input("check-mediana-publicacoes", "value"), 
     State("store-lista-dfs", "data")
 )
 def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
@@ -699,7 +678,7 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-outros", "value"),
-    Input("check-mediana-outros", "value"),  # NOVO INPUT
+    Input("check-mediana-outros", "value"), 
     State("store-lista-dfs", "data")
 )
 def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
@@ -843,7 +822,6 @@ def popular_opcoes_de_grupo(stored_data):
         return [], [], [], []
     dfs, metricas = parse_stored_data(stored_data)
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
-    # Retorna 4 outputs sempre (ordem: publicacoes, outros, orientacoes, registros)
     return grupos, grupos, grupos, grupos
 
 
@@ -864,16 +842,13 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
         {'label': 'Outros', 'value': 'outros'},
     ]
 
-    # sem dados armazenados, mantém opções padrão e valor atual
     if not stored_data:
-        # se value for None (render inicial), retorna todos selecionados
         if not current_value:
             return default_options, [opt['value'] for opt in default_options]
         return default_options, current_value
 
     dfs, metricas = parse_stored_data(stored_data)
 
-    # detecta presença por categoria com base nas métricas explícitas
     orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
     registros_present = any(m in metricas for m in ["PATENTES", "REGISTROS DE SW"]) 
     publicacoes_present = any(m in metricas for m in ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS'])
@@ -886,7 +861,6 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
         {'label': 'Outros', 'value': 'outros'},
     ]
 
-    # filtra apenas as opções que têm métricas correspondentes (oculta as demais)
     options = []
     if registros_present:
         options.append(options_all[0])
@@ -897,7 +871,6 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
     if outros_present:
         options.append(options_all[3])
 
-    # ajusta value removendo itens que foram ocultados
     if not current_value:
         new_value = [opt['value'] for opt in options]
     else:
@@ -942,12 +915,10 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
 )
 def toggle_sections(selected_viz, stored_data):
 
-    # comportamento padrão baseado apenas no checklist (quando não há dados armazenados)
     default_style = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
                      "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1400px"}
     hidden = {"display": "none"}
 
-    # se não há dados armazenados, usa apenas o checklist
     if not stored_data:
         style_orientacoes = default_style if "orientacoes" in selected_viz else hidden
         style_registros = default_style if "registros" in selected_viz else hidden
@@ -955,7 +926,7 @@ def toggle_sections(selected_viz, stored_data):
         style_outros = default_style if "outros" in selected_viz else hidden
         return style_orientacoes, style_registros, style_publicacoes, style_outros
 
-    # usa as métricas explícitas gravadas em _meta (mais confiável que inspecionar colunas)
+    # usa as métricas explícitas gravadas em _meta 
     dfs, metricas = parse_stored_data(stored_data)
 
     orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
@@ -983,7 +954,6 @@ def generate_excel(data):
                 wrote_any = True
 
         if not wrote_any:
-            # cria uma aba resumo indicando que não há métricas selecionadas
             resumo = pd.DataFrame({"Info": ["Nenhuma métrica selecionada ou dados disponíveis para exportar."]})
             resumo.to_excel(writer, sheet_name='Resumo', index=False)
     output.seek(0)
@@ -1035,7 +1005,6 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         return dfs_grupos
 
     elif modo == 'professor':
-        # se um grupo foi selecionado usa só esse grupo # nao esta funcionando
         lista_dfs_professores = []
         grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
 
@@ -1082,7 +1051,6 @@ def parse_stored_data(stored_data):
                 # caso o valor já seja uma estrutura serializada (fallback)
                 df = pd.DataFrame(v)
             else:
-                # tentativa de carregar diretamente
                 df = pd.read_json(io.StringIO(str(v)), orient='split')
             dfs[k] = df
         except Exception:
