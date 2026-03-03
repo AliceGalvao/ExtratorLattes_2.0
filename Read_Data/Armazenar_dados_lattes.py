@@ -254,7 +254,8 @@ class StorageLattes:
         
         erros_extracao = []  # Criando uma lista de erros de extração, mesmo que esteja vazia para evitor erros
         return faltantes, erros_extracao
-
+        
+        
     def extrair_zip_grupos(self):
         xmls_grupos = []
         zips_grupos = []

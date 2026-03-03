@@ -313,9 +313,12 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         except Exception as e:
             logger.error(f"Erro convertendo dados para JSON: {e}")
 
-        # Adiciona metadados explícitos com as métricas selecionadas para o front-end
         dict_para_store = lista_dfs.copy() if isinstance(lista_dfs, dict) else {}
-        dict_para_store['_meta'] = {'metricas': metricas_para_leitor}
+        dict_para_store['_meta'] = {
+            'metricas': metricas_para_leitor,
+            'ano_inicio': ano_inicio,
+            'ano_termino': ano_termino
+        }
 
         return "", dict_para_store, False, ""
 
@@ -323,8 +326,6 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
         logger.error(f"[X] Erro ao gerar resultados: {str(e)}\n{traceback.format_exc()}")
         return no_update, no_update, True, f"Erro durante a extração: {e}"
 
-
-# Limpa os dados armazenados quando o usuário altera os filtros (para evitar usar dados antigos sem reextração)
 @callback(
     Output('store-lista-dfs', 'data', allow_duplicate=True),
     Input('filtro-orientacao-1', 'value'),
@@ -336,9 +337,6 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
     prevent_initial_call=True
 )
 def limpar_dados_ao_mudar_filtros(o1, o2, o3, registro, publicacoes, outros):
-    # Em vez de retornar None, gravamos um _meta com lista vazia de métricas.
-    # Isso permite que a interface saiba explicitamente que não há métricas selecionadas
-    # e o frontend pode ocultar as seções/checkboxes correspondentes.
     return {'_meta': {'metricas': []}}
 
 
@@ -348,8 +346,6 @@ def limpar_dados_ao_mudar_filtros(o1, o2, o3, registro, publicacoes, outros):
     prevent_initial_call=True
 )
 def redirecionar_apos_processamento(store_data):
-    # Só redireciona quando houver resultados reais para visualizar.
-    # Evita redirecionamento quando o store contém apenas um _meta vazio.
     if not store_data:
         raise PreventUpdate
 
@@ -357,14 +353,12 @@ def redirecionar_apos_processamento(store_data):
         # Se for dict, verificar se existe ao menos uma chave além de '_meta'
         if isinstance(store_data, dict):
             other_keys = [k for k in store_data.keys() if k != '_meta']
-            # se existirem outras chaves e pelo menos uma delas tiver conteúdo, redireciona
             for k in other_keys:
                 v = store_data.get(k)
                 if v:
                     logger.info("Redirecionando automaticamente para /visualizacoes após processamento.")
                     return "/visualizacoes"
 
-            # por fim, checar se _meta possui métricas não vazias
             meta = store_data.get('_meta')
             metricas = []
             if isinstance(meta, dict):
@@ -383,7 +377,6 @@ def redirecionar_apos_processamento(store_data):
     except Exception as e:
         logger.warning(f"Erro ao avaliar dados de store para redirecionamento: {e}")
 
-    # Se chegou aqui, não há dados úteis para visualizar — não redireciona.
     raise PreventUpdate
 
 
@@ -397,8 +390,6 @@ def resetar_redirecionamento(pathname):
         logger.info("Redirecionamento resetado para /filters.")
         return False
     raise PreventUpdate
-
-
 
 @callback(
     Output('store-lista-dfs', 'data', allow_duplicate=True),
@@ -429,7 +420,6 @@ def normalizar_meta_ao_entrar_em_filtros(pathname, store_data):
             metricas = []
 
     if not metricas:
-        # nada a normalizar
         raise PreventUpdate
 
     # Coleta colunas disponíveis nos DataFrames do store
@@ -443,7 +433,6 @@ def normalizar_meta_ao_entrar_em_filtros(pathname, store_data):
             elif isinstance(v, dict):
                 df = pd.DataFrame(v)
             else:
-                # tentativa de converter para json string
                 df = pd.read_json(StringIO(str(v)), orient='split')
             available.update([c for c in df.columns if isinstance(c, str)])
         except Exception:
@@ -452,24 +441,21 @@ def normalizar_meta_ao_entrar_em_filtros(pathname, store_data):
     # Interseção
     novas_metricas = [m for m in metricas if m in available]
 
-    # Serializa e reescreve apenas entradas válidas (DataFrames), garantindo formato consistente
     novo_store = {}
     for k, v in store_data.items():
         if k == '_meta':
             continue
         try:
             if isinstance(v, str):
-                # tenta carregar e re-serializar (garante que strings JSON válidas sejam padronizadas)
                 df = pd.read_json(StringIO(v), orient='split')
             elif isinstance(v, dict):
                 df = pd.DataFrame(v)
             else:
                 df = pd.read_json(StringIO(str(v)), orient='split')
 
-            # re-serializa no formato padrão
+            # formato padrão
             novo_store[k] = df.to_json(orient='split')
         except Exception:
-            # ignora entradas inválidas - não serão regravadas
             continue
 
     # grava o _meta normalizado
