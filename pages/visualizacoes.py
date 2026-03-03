@@ -5,7 +5,6 @@ import pandas as pd
 import io
 import plotly.express as px
 from dash.exceptions import PreventUpdate
-from datetime import datetime
 
 dash.register_page(__name__, path='/visualizacoes', name="Visualizações")
 import json
@@ -70,19 +69,7 @@ html.Div([
                 ],
                 value=['registros', 'orientacoes', 'publicacoes', 'outros'],
                 style={'display': 'flex', 'gap': '30px', 'flexWrap': 'wrap', 'fontSize': '14px'}
-            ),
-html.Div([
-                html.Label("Filtrar Período:", style={'fontWeight': 'bold', 'marginBottom': '10px'}),
-                dcc.RangeSlider(
-                    id='filtro-ano-geral',
-                    min=int(datetime.now().year) - 10, max=int(datetime.now().year), step=1,
-                    value=[int(datetime.now().year) - 10, int(datetime.now().year)],
-                    marks={i: str(i) for i in range(int(datetime.now().year) - 10, int(datetime.now().year + 1))}
-                ),
-                html.Div(id='selected-period-display', style={'marginTop':'6px', 'fontSize':'12px', 'fontWeight':'normal', 'color':'#666'})
-            ], style={'padding': '10px 0','fontSize': '14px'}),
-            # DEBUG PANEL (temporary, hidden by default): mostra conteúdo do store-lista-dfs e filtragem por ano
-            html.Div(id='debug-store-visualizacoes', style={'fontSize': '12px', 'whiteSpace': 'pre-wrap', 'marginTop': '10px', 'backgroundColor': '#fff8dc', 'padding': '10px', 'borderRadius': '6px'}) ,
+            )
         ], style={'width': '45%', 'padding': '10px'}),
 
         html.Div([
@@ -111,11 +98,11 @@ html.Div([
                           style={'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px', 'color': '#2c3e50'})
         ]),
         html.Div(id="filtros-orientacoes-container"),
-        dcc.Loading(id='loading-orientacoes', children=html.Div(id="container-graficos",
+        html.Div(id="container-graficos",
                  style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
-    ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
+                        'padding': '10px', 'gap': '15px', 'width': '100%'})
+    ], style={"margin": "20px auto", "padding": "24px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1700px"}),
 
     html.Div(id="section-registros", children=[
         html.H3("Registros", style={'textAlign': 'center', 'marginBottom': '15px'}),
@@ -132,11 +119,18 @@ html.Div([
                 ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
             ])
         ]),
-        dcc.Loading(id='loading-registros', children=html.Div(id="container-graficos-registros",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
-    ], style={"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
+        html.Div(id="container-graficos-registros",
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
+    ], style={"margin": "20px auto", "padding": "24px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1700px"}),
 
     html.Div(id="section-publicacoes", children=[
         html.H3("Publicações", style={'textAlign': 'center', 'marginBottom': '15px'}),
@@ -153,11 +147,18 @@ html.Div([
                 ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
             ])
         ]),
-        dcc.Loading(id='loading-publicacoes', children=html.Div(id="container-graficos-publicacoes",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
-    ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
-              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
+        html.Div(id="container-graficos-publicacoes",
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
+    ], style={"margin": "10px auto", "padding": "14px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
+              "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1700px"}),
 
     html.Div(id="section-outros", children=[
         html.H3("Outros", style={'textAlign': 'center', 'marginBottom': '15px'}),
@@ -173,9 +174,16 @@ html.Div([
                 ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
             ])
         ]),
-        dcc.Loading(id='loading-outros', children=html.Div(id="container-graficos-outros",
-                 style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
-                        'padding': '10px', 'gap': '15px', 'width': '100%', 'height': '450px'}), type='default')
+        html.Div(id="container-graficos-outros",
+                 style={
+                     'display': 'flex',
+                     'flexDirection': 'row',
+                     'overflowX': 'auto',
+                     'padding': '20px',
+                     'gap': '20px',
+                     'width': '100%',
+                     'alignItems': 'flex-start'
+                 })
     ], style={"margin": "10px auto", "padding": "10px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
               "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1500px"}),
 
@@ -183,11 +191,27 @@ html.Div([
     dcc.Store(id='store-modo-atual')
 ])
 
-def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=65, altura_por_barra=50,
-                            largura_max=1000, altura_max=500, altura_min=350):
-    n_barras = max(len(df), min_barras)
-    largura = min(n_barras * largura_por_barra, largura_max)
-    altura = max(min(n_barras * altura_por_barra, altura_max), altura_min)
+def ajustar_tamanho_grafico(df, min_barras=6, largura_por_barra=55, altura_por_barra=38,
+                            largura_max=1000, altura_max=550, largura_min=400, altura_min=500):
+    """Calcula largura e altura razoáveis para o cartão do gráfico.
+    Altura: 500px se menos de 6 itens, 550px se 6 ou mais.
+    Largura: 55px por barra, min 400px, max 1000px.
+    Quando rótulos são longos, cartão exibe scrollbar.
+    """
+    try:
+        n_barras = len(df)
+    except Exception:
+        n_barras = min_barras
+
+    if n_barras < 6:
+        altura_calculada = 500
+    else:
+        altura_calculada = 550
+
+    largura_calculada = int(n_barras * largura_por_barra)
+
+    largura = int(max(largura_min, min(largura_max, largura_calculada)))
+    altura = altura_calculada
     return f"{largura}px", f"{altura}px"
 
 # Valores de referência para o cálculo da "Mediana Geral"
@@ -207,11 +231,11 @@ MEDIANAS_GERAIS = {
     "REGISTROS DE SW": 0.0,
     "PATENTES": 0.0,
     # Outros
-    "EVENTOS ORGANIZADOS": 1,
+    "EVENTOS ORGANIZADOS": 1.0,
     "PUB. TEC. E ART.": 0.0
 }
 
-def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
+def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None, exibir_mediana=False):
     colunas_map = {
         "mestrado": {"orientacoes": {"concluido": ["O.P MESTRADO CONC."], "andamento": ["O.P MESTRADO AND."]},
                      "coorientacoes": {"concluido": ["C.O MESTRADO CONC."], "andamento": ["C.O MESTRADO AND."]}},
@@ -233,7 +257,6 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         if df_total.empty: return []
         if 'Nome' in df_total.columns:
             df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
-    # modo 'geral' fica com o comportamento padrão (loop sobre os dfs abaixo). Histórico por ano é tratado no leitor e não altera a vista padrão aqui.
 
         todas_metricas = ["O.P MESTRADO CONC.", "O.P MESTRADO AND.", "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
                           "O.P DOUTORADO CONC.", "O.P DOUTORADO AND.", "C.O DOUTORADO CONC.", "C.O DOUTORADO AND.",
@@ -268,10 +291,11 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                     cols_and = colunas_map[t][natureza]["andamento"]
                 val_conc = df[cols_conc].sum(axis=1).sum() if cols_conc and all(c in df.columns for c in cols_conc) else 0
                 val_and = df[cols_and].sum(axis=1).sum() if cols_and and all(c in df.columns for c in cols_and) else 0
+                identificador = 'Total' if modo == 'geral' and grupo == 'total' else grupo
                 if status in ("concluido", "ambos"):
-                    dados_plot.append({"Identificador": grupo, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
+                    dados_plot.append({"Identificador": identificador, "Tipo": t, "Status": "Concluído", "Valor": val_conc})
                 if status in ("andamento", "ambos"):
-                    dados_plot.append({"Identificador": grupo, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
+                    dados_plot.append({"Identificador": identificador, "Tipo": t, "Status": "Em andamento", "Valor": val_and})
 
     df_plot = pd.DataFrame(dados_plot)
     graficos = []
@@ -280,9 +304,15 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
         df_t = df_plot[df_plot["Tipo"] == t]
         if df_t.empty: continue
         ordem = df_t.groupby("Identificador")["Valor"].sum().sort_values(ascending=False).index.tolist()
+        
+        if modo == 'professor':
+            mapa_renomeacao = {ordem[i]: f'P{i+1}' for i in range(len(ordem))}
+            df_t = df_t.copy()
+            df_t['Identificador'] = df_t['Identificador'].map(mapa_renomeacao)
+            ordem = [mapa_renomeacao[x] for x in ordem]
+        
         fig = px.bar(df_t, x="Identificador", y="Valor", color="Status", barmode="stack", title=t.upper(), text_auto=True)
 
-        # LÓGICA DE MEDIANA CONDICIONAL
         if exibir_mediana:
             try:
                 sums = df_t.groupby("Identificador")["Valor"].sum()
@@ -291,56 +321,36 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                     med_g = MEDIANAS_GERAIS.get(t, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
+                                      annotation_position='top right')
                     else:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
+
                         if med_g is not None:
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(template="plotly_white", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=ordem),
                           yaxis=dict(title=None), margin=dict(l=20, r=20, t=65, b=60))
-        largura, altura = ajustar_tamanho_grafico(df_t, altura_min=350)
-        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
+        largura, altura = ajustar_tamanho_grafico(df_t, altura_min=200)
+
+        graficos.append(html.Div(
+            dcc.Graph(figure=fig, config={'responsive': True}, style={'width': '100%', 'height': altura}),
+            style={'flex': '0 1 auto', 'minWidth': largura, 'maxWidth': '1000px', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)', 'overflowY': 'auto'}
+        ))
 
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
+def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
     graficos = []
     df_plot_list = []
 
-
-    if modo == 'geral' and 'historico_geral' in dfs:
-        df_hist = dfs.get('historico_geral')
-        if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
-            df_h = df_hist.copy()
-            df_h['Metrica_upper'] = df_h['Metrica'].astype(str).str.upper()
-            if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
-                try:
-                    inicio, fim = int(ano_range[0]), int(ano_range[1])
-                    df_h = df_h[(df_h['Ano'] >= inicio) & (df_h['Ano'] <= fim)]
-                except Exception:
-                    pass
-            # map historico metrics that correspond to registros
-            regs_upper = set(['PATENTES/SOFTWARES', 'PATENTES', 'REGISTROS DE SW', 'PATENTES/SOFT'])
-            df_sum = df_h[df_h['Metrica_upper'].isin(regs_upper)].groupby('Metrica_upper', as_index=False)['Quantidade'].sum()
-            if not df_sum.empty:
-                df_sum['Metrica_Display'] = df_sum['Metrica_upper'].map(lambda x: 'Patentes/Softwares' if 'PATENT' in x or 'SOFT' in x else x.title())
-                fig = px.bar(df_sum, x='Metrica_Display', y='Quantidade', title='Registros (Geral)', template="plotly_white", text_auto=True)
-                fig.update_traces(textposition='inside')
-                fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                                  xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
-                largura, altura = ajustar_tamanho_grafico(df_sum)
-                return [html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})]
-
-    # Fallback to original behaviour (per-modo tabling)
     for nome, df in dfs.items():
         if modo == 'geral' and nome == 'total':
             df_tmp = df.copy(); df_tmp['X'] = 'Total'; df_plot_list.append(df_tmp)
@@ -356,6 +366,11 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False, ano
     for col in metricas_registros:
         if col not in df_total.columns: continue
         df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]}).sort_values("Quantidade", ascending=False)
+        
+        if modo == 'professor':
+            mapa_renomeacao = {df_melt['X'].iloc[i]: f'P{i+1}' for i in range(len(df_melt))}
+            df_melt['X'] = df_melt['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -365,27 +380,51 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False, ano
                     med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
+                                      annotation_position='top right')
                     else:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
+
                         if med_g is not None:
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_melt["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
-        largura, altura = ajustar_tamanho_grafico(df_total, altura_min=350)
-        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
+                          yaxis=dict(title=None),margin=dict(l=40, r=120, t=65, b=80))
+        largura, altura = ajustar_tamanho_grafico(df_total, altura_min=200)
+        try:
+            largura_val = max(int(largura.replace('px', '')), 420)
+        except Exception:
+            largura_val = 420
+        try:
+            altura_val = max(int(altura.replace('px', '')), 380)
+        except Exception:
+            altura_val = 380
+        altura_str = f"{altura_val}px"
+        minw_str = f"{largura_val}px"
 
+        graficos.append(html.Div(
+            dcc.Graph(figure=fig, config={'responsive': True}, style={'width': '100%', 'height': altura_str}),
+            style={
+                'flex': '0 1 auto',
+                'minWidth': minw_str,
+                'maxWidth': '1000px',
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'padding': '18px',
+                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
+                'marginRight': '15px',
+                'overflowY': 'auto'
+            }
+        ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-
-def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
+def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
     todas_metricas = metricas_publicacoes
     graficos = []
@@ -398,33 +437,9 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False, a
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
     elif modo == 'geral':
-        # Use historico_geral if present to honor the ano_range filter
-        df_hist = dfs.get('historico_geral')
-        if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
-            df_h = df_hist.copy()
-            df_h['Metrica'] = df_h['Metrica'].astype(str).str.strip()
-            df_h['Metrica_upper'] = df_h['Metrica'].str.upper()
-            if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
-                try:
-                    inicio, fim = int(ano_range[0]), int(ano_range[1])
-                    df_h = df_h[(df_h['Ano'] >= inicio) & (df_h['Ano'] <= fim)]
-                except Exception:
-                    pass
-            pub_set = set(['ARTIGOS', 'LIVROS', 'CAPÍTULOS', 'EVENTOS'])
-            df_sum = df_h[df_h['Metrica_upper'].isin(pub_set)].groupby('Metrica_upper', as_index=False)['Quantidade'].sum()
-            if not df_sum.empty:
-                df_sum['Metrica_Display'] = df_sum['Metrica_upper'].map({'ARTIGOS':'Artigos','LIVROS':'Livros','CAPÍTULOS':'Capítulos','EVENTOS':'Eventos'})
-                fig = px.bar(df_sum, x='Metrica_Display', y='Quantidade', title='Publicações (Geral)', template="plotly_white", text_auto=True)
-                fig.update_traces(textposition='inside')
-                fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                                  xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
-                largura, altura = ajustar_tamanho_grafico(df_sum)
-                return [html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})]
-        # fallback
         df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
     elif modo == 'grupo':
-        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome not in ('total','historico_geral') and not str(nome).startswith('_')]
+        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome != "total"]
         if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
     else: return [html.Div("Modo inválido.")]
@@ -434,6 +449,11 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False, a
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
+        
+        if modo == 'professor':
+            mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
+            df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -443,26 +463,51 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False, a
                     med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
+                                      annotation_position='top right')
                     else:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
+
                         if med_g is not None:
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                          xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
-        largura, altura = ajustar_tamanho_grafico(df_total)
-        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
+                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
+        largura, altura = ajustar_tamanho_grafico(df_total, altura_min=200)
+        try:
+            largura_val = max(int(largura.replace('px', '')), 420)
+        except Exception:
+            largura_val = 420
+        try:
+            altura_val = max(int(altura.replace('px', '')), 380)
+        except Exception:
+            altura_val = 380
+        altura_str = f"{altura_val}px"
+        minw_str = f"{largura_val}px"
 
+        graficos.append(html.Div(
+            dcc.Graph(figure=fig, config={'responsive': True}, style={'width': '100%', 'height': altura_str}),
+            style={
+                'flex': '0 1 auto',
+                'minWidth': minw_str,
+                'maxWidth': '1000px',
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'padding': '18px',
+                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
+                'marginRight': '15px',
+                'overflowY': 'auto'
+            }
+        ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
-
-def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False, ano_range=None, grupo_selecionado=None):
+def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
     todas_metricas = metricas_outros
     graficos = []
@@ -475,36 +520,9 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False, ano_ra
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
         df_total['X'] = df_total['Nome']
     elif modo == 'geral':
-        # tentar usar historico_geral para as métricas de outros (EVENTOS ORGANIZADOS, PUB. TEC. E ART.)
-        df_hist = dfs.get('historico_geral')
-        if not isinstance(df_hist, pd.DataFrame) or df_hist.empty:
-            df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
-        else:
-            df_hist = df_hist.copy()
-            df_hist['Metrica'] = df_hist['Metrica'].astype(str).str.strip()
-            df_hist['Metrica_upper'] = df_hist['Metrica'].str.upper()
-            # no modo 'geral', respeita o filtro de ano se fornecido via ano_range
-            if 'ano_range' in locals() and ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
-                try:
-                    inicio, fim = int(ano_range[0]), int(ano_range[1])
-                    df_hist = df_hist[(df_hist['Ano'] >= inicio) & (df_hist['Ano'] <= fim)]
-                except Exception:
-                    pass
-            met_outros_upper = set(['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
-            df_sum = df_hist[df_hist['Metrica_upper'].isin(met_outros_upper)].groupby('Metrica_upper', as_index=False)['Quantidade'].sum()
-            if df_sum.empty:
-                df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
-            else:
-                df_sum['Metrica_Display'] = df_sum['Metrica_upper'].map({'EVENTOS ORGANIZADOS': 'EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.': 'PUB. TEC. E ART.'})
-                fig = px.bar(df_sum, x='Metrica_Display', y='Quantidade', title='Outros (Geral)', template="plotly_white", text_auto=True)
-                fig.update_traces(textposition='inside')
-                fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                                  xaxis=dict(title=None, tickangle=-45, automargin=True), yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
-                largura, altura = ajustar_tamanho_grafico(df_sum)
-                return [html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'})]
+        df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
     elif modo == 'grupo':
-        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome not in ('total', 'historico_geral') and not str(nome).startswith('_')]
+        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome != "total"]
         if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
         df_total = pd.concat(df_plot_list, ignore_index=True)
     else: return [html.Div("Modo inválido.")]
@@ -514,6 +532,11 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False, ano_ra
     for col in todas_metricas:
         if not any(col in df.columns for df in dfs.values()): continue
         df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
+        
+        if modo == 'professor':
+            mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
+            df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
+        
         fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
@@ -523,24 +546,38 @@ def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False, ano_ra
                     med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>", annotation_position='top right')
+                                      annotation_text=f"<b>Mediana / Mediana Geral: {med_l:.1f}</b>",
+                                      annotation_position='top right')
                     else:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
-                                      annotation_text=(f"<b>Mediana: {med_l:.0f}</b>" if med_l.is_integer() else f"<b>Mediana: {med_l:.2f}</b>"),
+                                      annotation_text=f"<b>Mediana: {med_l:.1f}</b>",
                                       annotation_position='top right')
+
                         if med_g is not None:
                             fig.add_hline(y=med_g, line_dash='dash', line_color='crimson',
-                                          annotation_text=f"<b>Mediana Geral: {med_g}</b>", annotation_position='top left')
+                                          annotation_text=f"<b>Mediana Geral: {med_g:.1f}</b>",
+                                          annotation_position='top right')
             except: pass
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                           xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
-                          yaxis=dict(title=None), margin=dict(l=20, r=20, t=40, b=60))
-        largura, altura = ajustar_tamanho_grafico(df_total)
-        graficos.append(html.Div(dcc.Graph(figure=fig, config={'responsive': True}, style={'height': altura, 'width': largura}),
-                                 style={'flex': '0 0 auto', 'backgroundColor': 'white', 'borderRadius': '12px', 'padding': '15px', 'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)'}))
-
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
+        largura, altura = ajustar_tamanho_grafico(df_total, altura_min=200)
+        graficos.append(html.Div(
+            dcc.Graph(figure=fig, config={'responsive': True}, style={'width': '100%', 'height': altura}),
+            style={
+                'flex': '0 1 auto',
+                'minWidth': largura,
+                'maxWidth': '1000px',
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'padding': '15px',
+                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
+                'marginRight': '15px',
+                'overflowY': 'auto'
+            }
+        ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 
 @callback(
@@ -581,21 +618,19 @@ def resetar_filtros_ao_mudar_modo(modo_selecionado):
     Input("filtro-natureza-orientacoes", "value"),
     Input("filtro-grupo-orientacoes", "value"),
     Input("check-mediana-orientacoes", "value"),  # NOVO INPUT
-    Input('filtro-ano-geral', 'value'),
     State("store-lista-dfs", "data")
 )
 def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natureza,
-                                   grupo_selecionado, check_mediana, ano_range, stored_data):
-    # prepara dfs filtrados pelo modo selecionado
+                                   grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "orientacoes" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
+    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas, exibir_mediana=exibir)
 
 
 @callback(
@@ -603,20 +638,19 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-registros", "value"),
-    Input("check-mediana-registros", "value"),  # NOVO INPUT
-    Input('filtro-ano-geral', 'value'),
+    Input("check-mediana-registros", "value"), 
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, check_mediana, ano_range, stored_data):
+def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "registros" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_registros(dfs, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
+    return gerar_graficos_registros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
 
 
 @callback(
@@ -624,20 +658,19 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-publicacoes", "value"),
-    Input("check-mediana-publicacoes", "value"),  # NOVO INPUT
-    Input('filtro-ano-geral', 'value'),
+    Input("check-mediana-publicacoes", "value"), 
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, check_mediana, ano_range, stored_data):
+def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "publicacoes" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_publicacoes(dfs, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
+    return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
 
 
 @callback(
@@ -645,85 +678,19 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
     Input("checklist-viz", "value"),
     Input('store-modo-atual', 'data'),
     Input("filtro-grupo-outros", "value"),
-    Input("check-mediana-outros", "value"),  # NOVO INPUT
-    Input('filtro-ano-geral', 'value'),
+    Input("check-mediana-outros", "value"), 
     State("store-lista-dfs", "data")
 )
-def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check_mediana, ano_range, stored_data):
+def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check_mediana, stored_data):
     if not stored_data or "outros" not in selected_viz:
         return []
 
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs, metricas = parse_stored_data(stored_data)
-    dfs = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
-    return gerar_graficos_outros(dfs, modo, metricas, exibir_mediana=exibir, ano_range=ano_range, grupo_selecionado=grupo_selecionado)
-
-@callback(
-    Output('debug-store-visualizacoes', 'children'),
-    Input('filtro-ano-geral', 'value'),
-    Input('store-lista-dfs', 'data')
-)
-def debug_store_visualizacoes(ano_range, stored_data):
-    """Exibe diagnóstico rápido do store para ajudar a entender por que os gráficos não mudam."""
-    if not stored_data:
-        return 'store-lista-dfs vazio ou não preenchido.'
-    try:
-        dfs, metricas = parse_stored_data(stored_data)
-    except Exception as e:
-        return f'Erro parse_stored_data: {e}'
-
-    out = []
-    try:
-        keys = list(stored_data.keys()) if isinstance(stored_data, dict) else []
-        out.append(f'Keys no store: {keys}')
-        out.append(f"_meta.metricas (parse): {metricas}")
-
-        if 'historico_geral' in dfs:
-            df_hist = dfs.get('historico_geral')
-            if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
-                out.append(f"historico_geral shape: {df_hist.shape}")
-                out.append('historico_geral head:')
-                out.append(df_hist.head(10).to_string())
-                if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2:
-                    try:
-                        inicio, fim = int(ano_range[0]), int(ano_range[1])
-                        df_f = df_hist[(df_hist['Ano'] >= inicio) & (df_hist['Ano'] <= fim)]
-                        out.append(f'-> após filtro {inicio}-{fim} shape: {df_f.shape}')
-                        if not df_f.empty:
-                            out.append('\nSoma por Metrica no intervalo:')
-                            out.append(df_f.groupby('Metrica', as_index=False)['Quantidade'].sum().to_string(index=False))
-                        else:
-                            out.append('-> nenhum registro no intervalo selecionado')
-                    except Exception as e:
-                        out.append(f'Erro ao aplicar filtro por ano: {e}')
-            else:
-                out.append('historico_geral presente, mas vazio ou inválido (não DataFrame).')
-        else:
-            out.append('historico_geral NÃO presente nas keys do store.')
-    except Exception as e:
-        out.append(f'Erro inesperado ao analisar store: {e}')
-
-    # adicional: mostra o período selecionado de forma amigável
-    periodo_text = f"Período selecionado: {ano_range[0]} — {ano_range[1]}" if ano_range and isinstance(ano_range, (list, tuple)) and len(ano_range) == 2 else 'Período selecionado: —'
-    out.insert(1, periodo_text)
-
-    return html.Pre('\n'.join(out))
-
-
-@callback(
-    Output('selected-period-display', 'children'),
-    Input('filtro-ano-geral', 'value')
-)
-def mostrar_periodo(ano_range):
-    if not ano_range or not isinstance(ano_range, (list, tuple)) or len(ano_range) != 2:
-        return ''
-    try:
-        inicio, fim = int(ano_range[0]), int(ano_range[1])
-        return f"Período selecionado: {inicio} — {fim}"
-    except Exception:
-        return ''
+    return gerar_graficos_outros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
 
 @callback(
     Output("filtros-orientacoes-container", "children"),
@@ -855,7 +822,6 @@ def popular_opcoes_de_grupo(stored_data):
         return [], [], [], []
     dfs, metricas = parse_stored_data(stored_data)
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
-    # Retorna 4 outputs sempre (ordem: publicacoes, outros, orientacoes, registros)
     return grupos, grupos, grupos, grupos
 
 
@@ -876,29 +842,17 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
         {'label': 'Outros', 'value': 'outros'},
     ]
 
-    # sem dados armazenados, mantém opções padrão e valor atual
     if not stored_data:
-        # se value for None (render inicial), retorna todos selecionados
         if not current_value:
             return default_options, [opt['value'] for opt in default_options]
         return default_options, current_value
 
     dfs, metricas = parse_stored_data(stored_data)
 
-    # detecta presença por categoria com base nas métricas explícitas
     orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
     registros_present = any(m in metricas for m in ["PATENTES", "REGISTROS DE SW"]) 
     publicacoes_present = any(m in metricas for m in ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS'])
     outros_present = any(m in metricas for m in ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
-
-    # também considera o histórico geral (quando presente) para determinar presença de categorias
-    df_hist = dfs.get('historico_geral')
-    if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
-        hist_metrics = set(df_hist['Metrica'].astype(str).unique())
-        orientacoes_present = orientacoes_present or bool(hist_metrics & set(['Mestrado', 'Doutorado', 'IC', 'TCC']))
-        registros_present = registros_present or ('Patentes/Softwares' in hist_metrics)
-        publicacoes_present = publicacoes_present or bool(hist_metrics & set(['Artigos', 'Livros', 'Capítulos', 'Eventos']))
-        outros_present = outros_present or bool(hist_metrics & set(['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']))
 
     options_all = [
         {'label': 'Registros', 'value': 'registros'},
@@ -907,7 +861,6 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
         {'label': 'Outros', 'value': 'outros'},
     ]
 
-    # filtra apenas as opções que têm métricas correspondentes (oculta as demais)
     options = []
     if registros_present:
         options.append(options_all[0])
@@ -918,7 +871,6 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
     if outros_present:
         options.append(options_all[3])
 
-    # ajusta value removendo itens que foram ocultados
     if not current_value:
         new_value = [opt['value'] for opt in options]
     else:
@@ -963,12 +915,10 @@ def atualizar_modo(btn_geral, btn_grupo, btn_professor):
 )
 def toggle_sections(selected_viz, stored_data):
 
-    # comportamento padrão baseado apenas no checklist (quando não há dados armazenados)
     default_style = {"margin": "20px auto", "padding": "20px", "backgroundColor": "#f9f9f9", "borderRadius": "10px",
                      "boxShadow": "0 3px 8px rgba(0,0,0,0.1)", "width": "95%", "maxWidth": "1400px"}
     hidden = {"display": "none"}
 
-    # se não há dados armazenados, usa apenas o checklist
     if not stored_data:
         style_orientacoes = default_style if "orientacoes" in selected_viz else hidden
         style_registros = default_style if "registros" in selected_viz else hidden
@@ -976,22 +926,13 @@ def toggle_sections(selected_viz, stored_data):
         style_outros = default_style if "outros" in selected_viz else hidden
         return style_orientacoes, style_registros, style_publicacoes, style_outros
 
-    # usa as métricas explícitas gravadas em _meta (mais confiável que inspecionar colunas)
+    # usa as métricas explícitas gravadas em _meta 
     dfs, metricas = parse_stored_data(stored_data)
 
     orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
     registros_present = any(m in metricas for m in ["PATENTES", "REGISTROS DE SW"])
     publicacoes_present = any(m in metricas for m in ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS'])
     outros_present = any(m in metricas for m in ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.'])
-
-    # também considera o histórico geral para definir presença de categorias
-    df_hist = dfs.get('historico_geral')
-    if isinstance(df_hist, pd.DataFrame) and not df_hist.empty:
-        hist_metrics = set(df_hist['Metrica'].astype(str).unique())
-        orientacoes_present = orientacoes_present or bool(hist_metrics & set(['Mestrado', 'Doutorado', 'IC', 'TCC']))
-        registros_present = registros_present or ('Patentes/Softwares' in hist_metrics)
-        publicacoes_present = publicacoes_present or bool(hist_metrics & set(['Artigos', 'Livros', 'Capítulos', 'Eventos']))
-        outros_present = outros_present or bool(hist_metrics & set(['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']))
 
     style_orientacoes = default_style if ("orientacoes" in selected_viz and orientacoes_present) else hidden
     style_registros = default_style if ("registros" in selected_viz and registros_present) else hidden
@@ -1013,7 +954,6 @@ def generate_excel(data):
                 wrote_any = True
 
         if not wrote_any:
-            # cria uma aba resumo indicando que não há métricas selecionadas
             resumo = pd.DataFrame({"Info": ["Nenhuma métrica selecionada ou dados disponíveis para exportar."]})
             resumo.to_excel(writer, sheet_name='Resumo', index=False)
     output.seek(0)
@@ -1034,15 +974,20 @@ def download_excel(n_clicks, stored_data):
 
 mapa_professores = {}
 
+
 def anonimizar_nomes(df, coluna_nome='Nome'):
-    global mapa_professores
+    mapa_local = {}
+
     if coluna_nome not in df.columns:
         return df.copy()
+
     df_anon = df.copy()
+
     for nome in df[coluna_nome].dropna().unique():
-        if nome not in mapa_professores:
-            mapa_professores[nome] = f"P{len(mapa_professores) + 1}"
-    df_anon[coluna_nome] = df[coluna_nome].map(mapa_professores)
+        if nome not in mapa_local:
+            mapa_local[nome] = f"P{len(mapa_local) + 1}"
+
+    df_anon[coluna_nome] = df[coluna_nome].map(mapa_local)
     return df_anon
 
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
@@ -1060,14 +1005,12 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         return dfs_grupos
 
     elif modo == 'professor':
-        # se um grupo foi selecionado usa só esse grupo # nao esta funcionando
         lista_dfs_professores = []
-        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k not in ("total", "historico_geral") and not str(k).startswith('_')]
+        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
 
         for k in grupos_para_usar:
             df = dfs[k]
             df_filtrado = df.iloc[:-1].copy()  # remove linha de total
-            df_filtrado = anonimizar_nomes(df_filtrado)
             df_filtrado['Grupo/Programa'] = k
             lista_dfs_professores.append(df_filtrado)
 
@@ -1108,7 +1051,6 @@ def parse_stored_data(stored_data):
                 # caso o valor já seja uma estrutura serializada (fallback)
                 df = pd.DataFrame(v)
             else:
-                # tentativa de carregar diretamente
                 df = pd.read_json(io.StringIO(str(v)), orient='split')
             dfs[k] = df
         except Exception:

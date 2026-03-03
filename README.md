@@ -19,6 +19,8 @@ Comandos muito utilizados no Putty:
 - kill -9 <PID> (matar o processo)
 - ifconfig (encontrar os ips)
 - nano <nome_do_arquivo> (para editar, deletar, escrever os arquivos diretamente)
+- htop: mostra com detalhes todos os processos rodando na máquina, há também a possibilidade de interação
+- ps: esse comando fornece um snapshot estático de todos os processos em execução, mostrando informações como PID, TTY, tempo de execução e nome do comando
 
 Do Putty para o GitHub:
 - Passo 1: Gerar um token no GitHub
@@ -43,4 +45,5 @@ Sobre o deploy:
 - sudo systemctl status dash_app.service
 - systemctl daemon-reload
 OBS:
-Para facilitar a adição do repositório na máquina: Deixar o rep público quando clonar do GitHub
+- Para facilitar a adição do repositório na máquina: Deixar o rep público quando clonar do GitHub
+- Deve ser atualizado anualmente para garantir que os anos de corte estejam atualizados e as medianas também
