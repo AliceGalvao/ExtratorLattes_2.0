@@ -1135,6 +1135,8 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
 
         for k in grupos_para_usar:
+            if k == "historico_geral":
+                continue
             df = dfs[k]
             df_filtrado = df.iloc[:-1].copy()  # remove linha de total
             df_filtrado['Grupo/Programa'] = k
