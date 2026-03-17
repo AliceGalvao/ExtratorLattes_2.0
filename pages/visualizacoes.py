@@ -597,31 +597,6 @@ def guardar_modo_atual(btn_geral, btn_grupo, btn_professor):
     return modo
 
 @callback(
-    Output('debug-anos','children'),
-    Input('store-lista-dfs','data'),
-    Input('store-modo-atual','data')
-)
-def atualizar_debug_anos(stored_data, modo):
-    try:
-        if not stored_data:
-            return 'Store vazio.'
-        dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
-        has_hist = 'historico_geral' in stored_data
-        hist_vazio = ''
-        if has_hist:
-            hist_json = stored_data.get('historico_geral')
-            if isinstance(hist_json, str):
-                df_hist = pd.read_json(io.StringIO(hist_json), orient='split')
-            else:
-                df_hist = pd.DataFrame(hist_json)
-            hist_vazio = f' | histórico linhas: {len(df_hist)}'
-        met_str = ', '.join(metricas[:3]) if metricas else 'nenhuma'
-        return f"Modo: {modo} | Ano: {anos.get('inicio')}-{anos.get('termino')} | Histórico: {has_hist}{hist_vazio} | Métricas (primeiras 3): {met_str}"
-    except Exception as e:
-        import traceback
-        return f"Erro debug: {e} | {traceback.format_exc()}"
-
-@callback(
     Output('filtro-status-orientacoes', 'value'),
     Output('filtro-tipo-orientacoes', 'value'),
     Output('filtro-natureza-orientacoes', 'value'),
@@ -669,6 +644,12 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             # Filtra por período de anos (para todas as métricas disponíveis)
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
+            metricas_orientacoes = ["O.P Mestrado Conc.", "O.P Mestrado And.", "C.O Mestrado Conc.", "C.O Mestrado And.",
+                                    "O.P Doutorado Conc.","O.P Doutorado And.", "C.O Doutorado Conc.","C.O Doutorado And.",
+                                     "O.P Ic Conc.", "Orientacoes Conc. Especializacao", "Orientações Conc. Tcc"]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_orientacoes)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
             # Gera histogramas para TODAS as métricas no período
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
@@ -719,6 +700,10 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
             
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
+            metricas_registros = ["Registros de SW", "Patentes"]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_registros)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
             if not graficos:
@@ -765,6 +750,11 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
             
+            metricas_publicacoes = ["Publicações Científicas", "Livros ISBN", "Capítulos ISBN", "Pub. Trab. Eventos"]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_publicacoes)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
+            
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
             if not graficos:
                 exibir = 'SIM' in (check_mediana or [])
@@ -809,6 +799,11 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
             
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
+            
+            metricas_outros = ["Eventos Organizados", "Pub. Tec. e Art."]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
             if not graficos:
