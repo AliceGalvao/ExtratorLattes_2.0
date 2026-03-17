@@ -750,7 +750,7 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
             
-            metricas_publicacoes = ["Publicações Científicas", "Livros ISBN", "Capítulos ISBN", "Pub. Trab. Eventos"]
+            metricas_publicacoes = ["Publicações Científicas", "Livros Isbn", "Capítulos Isbn", "Pub. Trab. Eventos"]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_publicacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
@@ -800,7 +800,7 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
             
-            metricas_outros = ["Eventos Organizados", "Pub. Tec. e Art."]
+            metricas_outros = ["Eventos","Eventos Organizados", "Pub. Tec. e Art."]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
