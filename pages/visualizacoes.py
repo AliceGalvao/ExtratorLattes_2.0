@@ -21,8 +21,6 @@ layout = html.Div([
         ], style={'display': 'inline-block', 'width': '50%', 'textAlign': 'right', 'padding': '10px'})
     ], style={'backgroundColor': '#001F3F', 'padding': '10px', 'display': 'flex'}),
 
-    html.Div(id='debug-anos', style={'fontSize': '12px', 'color': '#ffffff', 'backgroundColor': '#071B2D', 'padding': '6px 12px', 'borderRadius': '6px', 'width': 'fit-content', 'margin': '10px'}),
-
     html.Div([
         html.Div([
             html.Div("Forma de visualização:", style={'fontWeight': 'bold', 'marginBottom': '10px'}),
