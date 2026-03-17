@@ -800,7 +800,7 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
             
-            metricas_outros = ["Eventos","Eventos Organizados", "Pub. Tec. e Art."]
+            metricas_outros = ["Eventos","Eventos Organizados", "Pub. Tec. E Art."]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
