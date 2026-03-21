@@ -1148,7 +1148,7 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
 
         return {'professores': pd.DataFrame()}
 
-    return {}  # <- IMPORTANTE
+    return {} 
 
 def parse_stored_data(stored_data):
     """Retorna um dict de DataFrames e a lista de métricas selecionadas (meta) do stored_data.
