@@ -617,7 +617,7 @@ def resetar_filtros_ao_mudar_modo(modo_selecionado):
     Input("filtro-tipo-orientacoes", "value"),
     Input("filtro-natureza-orientacoes", "value"),
     Input("filtro-grupo-orientacoes", "value"),
-    Input("check-mediana-orientacoes", "value"),  # NOVO INPUT
+    Input("check-mediana-orientacoes", "value"),
     State("store-lista-dfs", "data")
 )
 def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natureza,
@@ -625,9 +625,46 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
     if not stored_data or "orientacoes" not in selected_viz:
         return []
 
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
+    
+    # Se está no modo geral e há anos selecionados, mostra histogramas
+    if modo_atual == 'geral' and anos['inicio'] is not None and anos['termino'] is not None:
+        if 'historico_geral' not in stored_data:
+            return [html.Div("Histórico não disponível.")]
+        
+        try:
+            historico_json = stored_data.get('historico_geral')
+            if isinstance(historico_json, str):
+                df_historico = pd.read_json(io.StringIO(historico_json), orient='split')
+            else:
+                df_historico = pd.DataFrame(historico_json)
+            
+            # Filtra por período de anos (para todas as métricas disponíveis)
+            df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
+                                       (df_historico['Ano'] <= anos['termino'])]
+            metricas_orientacoes = ["O.P Mestrado Conc.", "O.P Mestrado And.", "C.O Mestrado Conc.", "C.O Mestrado And.",
+                                    "O.P Doutorado Conc.","O.P Doutorado And.", "C.O Doutorado Conc.","C.O Doutorado And.",
+                                     "O.P Ic Conc.", "Orientacoes Conc. Especializacao", "Orientações Conc. Tcc"]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_orientacoes)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
+            
+            # Gera histogramas para TODAS as métricas no período
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
+            if not graficos:
+                # fallback para gráficos normais se não houver histórico
+                exibir = 'SIM' in (check_mediana or [])
+                modo = modo_atual if modo_atual else 'geral'
+                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+                return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas, exibir_mediana=exibir)
+            return graficos
+        except Exception as e:
+            import traceback
+            return [html.Div(f"Erro ao gerar histogramas: {str(e)} | {traceback.format_exc()[:200]}")]
+    
+    # Caso contrário, mostra gráficos normais
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
-    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
     return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas, exibir_mediana=exibir)
@@ -645,9 +682,39 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
     if not stored_data or "registros" not in selected_viz:
         return []
 
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
+    
+    # Se está no modo geral e há anos selecionados, mostra histogramas
+    if modo_atual == 'geral' and anos['inicio'] is not None and anos['termino'] is not None:
+        if 'historico_geral' not in stored_data:
+            return [html.Div("Histórico não disponível.")]
+        
+        try:
+            historico_json = stored_data.get('historico_geral')
+            if isinstance(historico_json, str):
+                df_historico = pd.read_json(io.StringIO(historico_json), orient='split')
+            else:
+                df_historico = pd.DataFrame(historico_json)
+            
+            df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
+                                       (df_historico['Ano'] <= anos['termino'])]
+            metricas_registros = ["Registros de SW", "Patentes"]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_registros)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
+            
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
+            if not graficos:
+                exibir = 'SIM' in (check_mediana or [])
+                modo = modo_atual if modo_atual else 'geral'
+                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+                return gerar_graficos_registros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+            return graficos
+        except Exception as e:
+            return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
+    
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
-    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
     return gerar_graficos_registros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
@@ -665,9 +732,39 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
     if not stored_data or "publicacoes" not in selected_viz:
         return []
 
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
+    
+    if modo_atual == 'geral' and anos['inicio'] is not None and anos['termino'] is not None:
+        if 'historico_geral' not in stored_data:
+            return [html.Div("Histórico não disponível.")]
+        
+        try:
+            historico_json = stored_data.get('historico_geral')
+            if isinstance(historico_json, str):
+                df_historico = pd.read_json(io.StringIO(historico_json), orient='split')
+            else:
+                df_historico = pd.DataFrame(historico_json)
+            
+            df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
+                                       (df_historico['Ano'] <= anos['termino'])]
+            
+            metricas_publicacoes = ["Publicações Científicas", "Livros Isbn", "Capítulos Isbn", "Pub. Trab. Eventos"]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_publicacoes)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
+            
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
+            if not graficos:
+                exibir = 'SIM' in (check_mediana or [])
+                modo = modo_atual if modo_atual else 'geral'
+                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+                return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+            return graficos
+        except Exception as e:
+            return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
+    
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
-    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
     return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
@@ -685,9 +782,39 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
     if not stored_data or "outros" not in selected_viz:
         return []
 
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
+    
+    if modo_atual == 'geral' and anos['inicio'] is not None and anos['termino'] is not None:
+        if 'historico_geral' not in stored_data:
+            return [html.Div("Histórico não disponível.")]
+        
+        try:
+            historico_json = stored_data.get('historico_geral')
+            if isinstance(historico_json, str):
+                df_historico = pd.read_json(io.StringIO(historico_json), orient='split')
+            else:
+                df_historico = pd.DataFrame(historico_json)
+            
+            df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
+                                       (df_historico['Ano'] <= anos['termino'])]
+            
+            metricas_outros = ["Eventos","Eventos Organizados", "Pub. Tec. E Art."]
+
+            df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
+            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
+            
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
+            if not graficos:
+                exibir = 'SIM' in (check_mediana or [])
+                modo = modo_atual if modo_atual else 'geral'
+                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+                return gerar_graficos_outros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+            return graficos
+        except Exception as e:
+            return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
+    
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
-    dfs, metricas = parse_stored_data(stored_data)
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
 
     return gerar_graficos_outros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
@@ -820,7 +947,7 @@ def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
 def popular_opcoes_de_grupo(stored_data):
     if not stored_data:
         return [], [], [], []
-    dfs, metricas = parse_stored_data(stored_data)
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
     grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
     return grupos, grupos, grupos, grupos
 
@@ -847,7 +974,7 @@ def atualizar_checklist_viz_por_metricas(stored_data, current_value):
             return default_options, [opt['value'] for opt in default_options]
         return default_options, current_value
 
-    dfs, metricas = parse_stored_data(stored_data)
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
 
     orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
     registros_present = any(m in metricas for m in ["PATENTES", "REGISTROS DE SW"]) 
@@ -926,8 +1053,7 @@ def toggle_sections(selected_viz, stored_data):
         style_outros = default_style if "outros" in selected_viz else hidden
         return style_orientacoes, style_registros, style_publicacoes, style_outros
 
-    # usa as métricas explícitas gravadas em _meta 
-    dfs, metricas = parse_stored_data(stored_data)
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
 
     orientacoes_present = any(m for m in metricas if m.startswith('O.P') or m.startswith('C.O') or m.startswith('ORIENTA'))
     registros_present = any(m in metricas for m in ["PATENTES", "REGISTROS DE SW"])
@@ -968,7 +1094,7 @@ def generate_excel(data):
 def download_excel(n_clicks, stored_data):
     if not stored_data:
         raise PreventUpdate
-    dfs, metricas = parse_stored_data(stored_data)
+    dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
     excel_io = generate_excel({k: df.to_json(orient='split') for k, df in dfs.items()})
     return dcc.send_bytes(excel_io.getvalue(), "dados_extrator_lattes.xlsx")
 
@@ -991,6 +1117,7 @@ def anonimizar_nomes(df, coluna_nome='Nome'):
     return df_anon
 
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
+
     if modo == 'geral':
         df_total = dfs.get('total', pd.DataFrame())
         if not df_total.empty:
@@ -1000,27 +1127,28 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
     elif modo == 'grupo':
         dfs_grupos = {}
         for k, df in dfs.items():
-            if k != 'total':
+            if k not in ['total', 'historico_geral']:
                 dfs_grupos[k] = df.iloc[[-1]]
         return dfs_grupos
 
     elif modo == 'professor':
         lista_dfs_professores = []
-        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
+        for k, df in dfs.items():
 
-        for k in grupos_para_usar:
-            df = dfs[k]
-            df_filtrado = df.iloc[:-1].copy()  # remove linha de total
+            if k in ["historico_geral", "total"]:
+                continue
+
+            df_filtrado = df.iloc[:-1].copy()
             df_filtrado['Grupo/Programa'] = k
             lista_dfs_professores.append(df_filtrado)
 
         if lista_dfs_professores:
             df_final = pd.concat(lista_dfs_professores, ignore_index=True)
             return {'professores': df_final}
+
         return {'professores': pd.DataFrame()}
 
-    return dfs
-
+    return {} 
 
 def parse_stored_data(stored_data):
     """Retorna um dict de DataFrames e a lista de métricas selecionadas (meta) do stored_data.
@@ -1048,13 +1176,11 @@ def parse_stored_data(stored_data):
             if isinstance(v, str):
                 df = pd.read_json(io.StringIO(v), orient='split')
             elif isinstance(v, dict):
-                # caso o valor já seja uma estrutura serializada (fallback)
                 df = pd.DataFrame(v)
             else:
                 df = pd.read_json(io.StringIO(str(v)), orient='split')
             dfs[k] = df
         except Exception:
-            # ignora entradas que não são DataFrames
             continue
 
     # Normaliza metricas: mantém apenas métricas que existem nas colunas dos DataFrames
@@ -1065,3 +1191,131 @@ def parse_stored_data(stored_data):
         metricas = [m for m in metricas if m in available_metrics]
 
     return dfs, metricas
+
+
+def parse_stored_data_with_anos(stored_data):
+    """Retorna um dict de DataFrames, lista de métricas e anos do stored_data.
+    stored_data pode ter valores JSON (string) ou já dicts; também pode conter a chave '_meta'.
+    """
+    dfs = {}
+    metricas = []
+    anos = {'inicio': None, 'termino': None}
+    
+    if not stored_data:
+        return dfs, metricas, anos
+
+    for k, v in stored_data.items():
+        if k == '_meta':
+            if isinstance(v, dict):
+                metricas = v.get('metricas', [])
+                inicio_raw = v.get('ano_inicio')
+                termino_raw = v.get('ano_termino')
+                try:
+                    anos['inicio'] = int(inicio_raw) if inicio_raw is not None else None
+                except (ValueError, TypeError):
+                    anos['inicio'] = None
+                try:
+                    anos['termino'] = int(termino_raw) if termino_raw is not None else None
+                except (ValueError, TypeError):
+                    anos['termino'] = None
+            else:
+                try:
+                    meta = json.loads(v)
+                    metricas = meta.get('metricas', [])
+                    inicio_raw = meta.get('ano_inicio')
+                    termino_raw = meta.get('ano_termino')
+                    try:
+                        anos['inicio'] = int(inicio_raw) if inicio_raw is not None else None
+                    except (ValueError, TypeError):
+                        anos['inicio'] = None
+                    try:
+                        anos['termino'] = int(termino_raw) if termino_raw is not None else None
+                    except (ValueError, TypeError):
+                        anos['termino'] = None
+                except Exception:
+                    metricas = []
+            continue
+
+        try:
+            if isinstance(v, str):
+                df = pd.read_json(io.StringIO(v), orient='split')
+            elif isinstance(v, dict):
+                df = pd.DataFrame(v)
+            else:
+                df = pd.read_json(io.StringIO(str(v)), orient='split')
+            dfs[k] = df
+        except Exception:
+            continue
+
+    if dfs:
+        available_metrics = set()
+        for df in dfs.values():
+            available_metrics.update([c for c in df.columns if isinstance(c, str)])
+        metricas = [m for m in metricas if m in available_metrics]
+
+    return dfs, metricas, anos
+
+
+def gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None):
+    """Gera histogramas agrupados por métrica usando o histórico por ano"""
+    graficos = []
+    
+    if df_historico.empty:
+        return []
+    
+    if metricas_selecionadas:
+        df_historico = df_historico[df_historico['Metrica'].isin(metricas_selecionadas)]
+    
+    if df_historico.empty:
+        return []
+    
+    for metrica in sorted(df_historico['Metrica'].unique()):
+        df_metrica = df_historico[df_historico['Metrica'] == metrica].sort_values('Ano')
+        
+        fig = px.bar(
+            df_metrica,
+            x='Ano',
+            y='Quantidade',
+            title=metrica,
+            template='plotly_white',
+            text_auto=True,
+            labels={'Ano': 'Ano', 'Quantidade': 'Quantidade'}
+        )
+        
+        fig.update_traces(textposition='inside')
+        fig.update_layout(
+            xaxis=dict(
+                title=None,
+                type='linear',
+                dtick=1 if len(df_metrica) <= 15 else None,
+                tickangle=-45,
+                automargin=True
+            ),
+            yaxis=dict(title=None),
+            margin=dict(l=40, r=40, t=65, b=80),
+            hovermode='x unified',
+            showlegend=False
+        )
+        
+        n_anos = len(df_metrica)
+        largura = max(400, min(n_anos * 80 + 100, 1000))
+        
+        graficos.append(html.Div(
+            dcc.Graph(
+                figure=fig,
+                config={'responsive': True},
+                style={'width': '100%', 'height': '500px'}
+            ),
+            style={
+                'flex': '0 1 auto',
+                'minWidth': f'{largura}px',
+                'maxWidth': '1000px',
+                'backgroundColor': 'white',
+                'borderRadius': '12px',
+                'padding': '15px',
+                'boxShadow': '0px 2px 8px rgba(0,0,0,0.1)',
+                'overflowY': 'auto'
+            }
+        ))
+    
+    return graficos if graficos else [html.Div("Nenhum gráfico para exibir.")]

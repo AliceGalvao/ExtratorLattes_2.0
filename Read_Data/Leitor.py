@@ -104,14 +104,48 @@ class Leitor:
         # registros de software
         softwares = leitor_xml.extrair_softwares(REGISTRO_OU_PATENTE, None)
 
-        # cria pesquisador e define atributos
+
+        historico_itens = []
+
+        def mapear_anos(colecao, nome_metrica):
+            for item in colecao:
+                # Tenta pegar o ano de diferentes atributos comuns nos seus objetos
+                ano = getattr(item, 'ano', getattr(item, 'ano_evento', getattr(item, 'ano_inicio', None)))
+                if ano:
+                    try:
+                        historico_itens.append({'Ano': int(ano), 'Metrica': nome_metrica})
+                    except:
+                        pass
+
+        # Mapeando as métricas principais para o gráfico geral
+        mapear_anos(artigos_publicados, 'PUBLICAÇÕES CIENTÍFICAS')
+        mapear_anos(livros_ISBN, 'LIVROS ISBN')
+        mapear_anos(capitulos_ISBN, 'CAPÍTULOS ISBN')
+        mapear_anos(orientacoes_mestrado_concluidas, 'O.P MESTRADO CONC.')
+        mapear_anos(orientacoes_doutorado_concluidas, 'O.P DOUTORADO CONC.')
+        mapear_anos(orientacoes_mestrado_andamento, 'O.P MESTRADO AND.')
+        mapear_anos(orientacoes_doutorado_andamento,'O.P DOUTORADO AND.')
+        mapear_anos(trabalhos_eventos,'EVENTOS')
+        mapear_anos(patentes,'PATENTES')
+        mapear_anos(orientacoes_ic_concluidas, 'O.P IC CONC.')
+        mapear_anos(orientacoes_tcc_concluidas, 'ORIENTAÇÕES CONC. TCC')
+        mapear_anos(orientacoes_tcc_tcr_especializao_concluidas, 'ORIENTACOES CONC. ESPECIALIZACAO')
+        mapear_anos(tecnicos_artisticos_nao_indexados, 'PUB. TEC. E ART.')
+        mapear_anos(eventos_organizados, 'EVENTOS ORGANIZADOS')
+        #
+        mapear_anos(projetos_pesquisa, 'PUB. TRAB. EVENTOS')
+        mapear_anos(projetos_desenvolvimento,'PUB. TRAB. EVENTOS')
+        #
+        mapear_anos(softwares,'REGISTROS DE SW')
+
+
+        # --- MONTAGEM DO OBJETO PESQUISADOR ---
         pesquisador = Pesquisador(
-            nome_e_id_bolsista[0],
-            nome_e_id_bolsista[1],
-            nome_e_id_bolsista[2],
-            nome_e_id_bolsista[3],
+            nome_e_id_bolsista[0], nome_e_id_bolsista[1],
+            nome_e_id_bolsista[2], nome_e_id_bolsista[3],
             nome_e_id_bolsista[4]
         )
+
         pesquisador.orientacoes_mestrado = orientacoes_mestrado_concluidas + orientacoes_mestrado_andamento
         pesquisador.orientacoes_doutorado = orientacoes_doutorado_concluidas + orientacoes_doutorado_andamento
         pesquisador.publicacoes_trabalhos_eventos = trabalhos_eventos
@@ -127,6 +161,8 @@ class Leitor:
         pesquisador.softwares = softwares
         pesquisador.orientacoes_tcc = orientacoes_tcc_concluidas
         pesquisador.orientacoes_tcc_tcr_especializacao = orientacoes_tcc_tcr_especializao_concluidas
+
+        pesquisador.historico_bruto = historico_itens
 
         return pesquisador
 
@@ -190,6 +226,7 @@ class Leitor:
             lista_dfs = []
             programas_totais = []
             programas_totais_eventos = []
+            historico_acumulado = []
 
             if os.path.exists(PASTA_PROGRAMAS):
                 programas = os.listdir(PASTA_PROGRAMAS)
@@ -212,6 +249,11 @@ class Leitor:
                 dados_pesquisadores = [p.series_eixo_ensino() for p in pesquisadores_programa]
                 df = pd.DataFrame(dados_pesquisadores)
                 df = df.loc[:, ~df.columns.duplicated()]
+
+                # colete historico bruto dos pesquisadores do programa
+                for p in pesquisadores_programa:
+                    if hasattr(p, 'historico_bruto'):
+                        historico_acumulado.extend(p.historico_bruto)
 
                 # linha de totais (soma apenas das colunas numéricas)
                 linha_programa_full = {col: df[col].sum() for col in df.columns if df[col].dtype in [int, float]}
@@ -265,6 +307,42 @@ class Leitor:
 
             dict_retorno = {df[0]: df[1].to_json(orient='split') for df in lista_dfs}
 
+            # se temos histórico acumulado, transforma e adiciona ao dicionário de retorno
+            df_historico_geral = pd.DataFrame(historico_acumulado)
+            if not df_historico_geral.empty:
+                # Normaliza e canonicaliza nomes de métricas para evitar discrepâncias (ex.: espaços, maiúsculas diferentes, variantes)
+                df_historico_geral['Metrica'] = df_historico_geral['Metrica'].astype(str).str.strip()
+                # Mapa de canonicalização (chave: upper stripped) -> valor padronizado
+                canonical_map = {
+        'Orientação Principal de Mestrado Concluída': 'O.P MESTRADO CONC.',
+        'Orientação Principal de Doutorado Concluída': 'O.P DOUTORADO CONC.',
+        'Co-orientação de Mestrado Concluída': 'C.O MESTRADO CONC.',
+        'Co-orientação de Doutorado Concluída': 'C.O DOUTORADO CONC.',
+        'Orientação Principal de Mestrado Em Andamento': 'O.P MESTRADO AND.',
+        'Orientação Principal de Doutorado Em Andamento':'O.P DOUTORADO AND.',
+        'Co-orientação de Mestrado Em Andamento': 'C.O MESTRADO AND.',
+        'Co-orientação de Doutorado Em Andamento': 'C.O DOUTORADO AND.',
+        'Orientação de Iniciação Científica': 'ORIENTAÇÕES I.C',
+        'Depósito ou Registro de Patentes': 'PATENTES',
+        'Registros de Software': 'REGISTROS DE SW',
+        'Publicação de Livros com ISBN': 'LIVROS ISBN',
+        'Publicação de Capítulos com ISBN': 'CAPÍTULOS ISBN',
+        'Publicação Técnica ou Artística': 'PUB. TEC. E ART.',
+        'Publicação de Trabalho em Eventos': 'PUB. TRAB. EVENTOS',
+        'Eventos Organizados': 'EVENTOS ORGANIZADOS',
+        'Ano de Titulação': 'ANO TITULACAO',
+        'Publicações Científicas': 'PUBLICAÇÕES CIENTÍFICAS',
+        'Orientações Concluídas de TCC na UPE': 'ORIENTAÇÕES CONC. TCC',
+        'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE':'ORIENTACOES CONC. ESPECIALIZACAO'
+        }
+                df_historico_geral['Metrica_upper'] = df_historico_geral['Metrica'].str.upper().str.replace('\u00ad','')
+                df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
+                df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
+
+                # Agrupa por Ano e Métrica padronizada
+                df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica']).size().reset_index(name='Quantidade')
+                dict_retorno['historico_geral'] = df_historico_geral.to_json(orient='split')
+
             # limpa pasta programas
             if os.path.exists(PASTA_PROGRAMAS):
                 shutil.rmtree(PASTA_PROGRAMAS)
@@ -276,19 +354,16 @@ class Leitor:
             logger.error(f"[X] ERRO AO GERAR ESTRUTURA DE PLANILHA: {traceback.format_exception(exc_type, exc_value, exc_tb)}")
             return None
 
-
-    def gerar_estrutura_de_csv_grupos(self):
+    def gerar_estrutura_de_csv_grupos(self, ano_inicio=None, ano_termino=None):
         df_grupo = pd.read_excel('./Read_Data/id_nome_grupo.xlsx')
         grupos_totais = []
         grupos_totais_eventos = []
+        historico_acumulado = []
 
         if not os.path.exists(PASTA_DADOS_SALVOS_GRUPOS):
             os.makedirs(PASTA_DADOS_SALVOS_GRUPOS)
 
-        if os.path.exists(PASTA_GRUPOS):
-            grupos = os.listdir(PASTA_GRUPOS)
-        else:
-            grupos = []
+        grupos = os.listdir(PASTA_GRUPOS) if os.path.exists(PASTA_GRUPOS) else []
 
         if not grupos:
             logger.error('NÃO EXISTEM GRUPOS A PERCORRER')
@@ -296,12 +371,17 @@ class Leitor:
 
         for grupo in grupos:
             nome_grupo = df_grupo.loc[df_grupo["id"] == int(grupo), "nome"].unique()[0]
+            # obtém a lista de objetos Pesquisador
             pesquisadores_grupo = self.read_pesquisadores_grupos(grupo)
             eventos_organizados = self.checa_organizacao_evento(pesquisadores_grupo)
 
             if not pesquisadores_grupo:
                 logger.warning(f'[X] Não há pesquisadores no grupo {nome_grupo} de id {grupo}')
                 continue
+
+            for p in pesquisadores_grupo:
+                if hasattr(p, 'historico_bruto'):
+                    historico_acumulado.extend(p.historico_bruto)
 
             dados_pesquisadores = [p.series_eixo_ensino() for p in pesquisadores_grupo]
             df = pd.DataFrame(dados_pesquisadores)
@@ -310,11 +390,10 @@ class Leitor:
             linha_grupo = {col: df[col].sum() for col in df.columns if df[col].dtype in [int, float]}
             linha_grupo['Nome'] = nome_grupo
             linha_grupo['ID LATTES'] = grupo
+
+            # Salva o Excel individual do grupo (seu código original)
             df_totais = pd.DataFrame([linha_grupo])
-
             df_concat = pd.concat([df, df_totais], ignore_index=True)
-            df_concat = df_concat.loc[:, ~df_concat.columns.duplicated()]
-
             diretorio = os.path.join(PASTA_DADOS_SALVOS_GRUPOS, grupo)
             os.makedirs(diretorio, exist_ok=True)
             df_concat.to_excel(os.path.join(diretorio, f'{grupo}.xlsx'))
@@ -322,13 +401,57 @@ class Leitor:
             grupos_totais.append(linha_grupo)
             grupos_totais_eventos.append({'Nome': nome_grupo, 'Quantidade de eventos': len(eventos_organizados)})
 
-        # Totais gerais
-        df_total_eventos = pd.DataFrame(grupos_totais_eventos)
-        df_total_eventos.to_excel(os.path.join(PASTA_DADOS_SALVOS_GRUPOS, 'total_grupos_eventos.xlsx'))
-
         df_total = pd.DataFrame(grupos_totais)
         linha_soma = df_total.drop(columns=['Nome', 'ID LATTES'], errors='ignore').sum(numeric_only=True)
         linha_soma['Nome'] = 'Total Geral'
         linha_soma['ID LATTES'] = 'Não possui'
         df_total = pd.concat([pd.DataFrame([linha_soma]), df_total], ignore_index=True)
         df_total.to_excel(os.path.join(PASTA_DADOS_SALVOS_GRUPOS, 'total_grupos.xlsx'))
+
+        df_historico_geral = pd.DataFrame(historico_acumulado)
+
+        # Criação do dicionário de retorno que será usado pelo Dash (store-lista-dfs)
+        resultado_dash = {
+            'total': df_total.to_json(orient='split'),
+            'eventos': pd.DataFrame(grupos_totais_eventos).to_json(orient='split')
+        }
+
+        if not df_historico_geral.empty:
+            # Normaliza e canonicaliza os nomes de métrica antes de agrupar
+            df_historico_geral['Metrica'] = df_historico_geral['Metrica'].astype(str).str.strip()
+            canonical_map = {
+        'Orientação Principal de Mestrado Concluída': 'O.P MESTRADO CONC.',
+        'Orientação Principal de Doutorado Concluída': 'O.P DOUTORADO CONC.',
+        'Co-orientação de Mestrado Concluída': 'C.O MESTRADO CONC.',
+        'Co-orientação de Doutorado Concluída': 'C.O DOUTORADO CONC.',
+        'Orientação Principal de Mestrado Em Andamento': 'O.P MESTRADO AND.',
+        'Orientação Principal de Doutorado Em Andamento':'O.P DOUTORADO AND.',
+        'Co-orientação de Mestrado Em Andamento': 'C.O MESTRADO AND.',
+        'Co-orientação de Doutorado Em Andamento': 'C.O DOUTORADO AND.',
+        'Orientação de Iniciação Científica': 'ORIENTAÇÕES I.C',
+        'Depósito ou Registro de Patentes': 'PATENTES',
+        'Registros de Software': 'REGISTROS DE SW',
+        'Publicação de Livros com ISBN': 'LIVROS ISBN',
+        'Publicação de Capítulos com ISBN': 'CAPÍTULOS ISBN',
+        'Publicação Técnica ou Artística': 'PUB. TEC. E ART.',
+        'Publicação de Trabalho em Eventos': 'PUB. TRAB. EVENTOS',
+        'Eventos Organizados': 'EVENTOS ORGANIZADOS',
+        'Ano de Titulação': 'ANO TITULACAO',
+        'Publicações Científicas': 'PUBLICAÇÕES CIENTÍFICAS',
+        'Orientações Concluídas de TCC na UPE': 'ORIENTAÇÕES CONC. TCC',
+        'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE':'ORIENTACOES CONC. ESPECIALIZACAO'
+        }
+            df_historico_geral['Metrica_upper'] = df_historico_geral['Metrica'].str.upper().str.replace('\u00ad','')
+            df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
+            df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
+
+            # Agrupa por Ano e Métrica para somar as quantidades
+            df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica']).size().reset_index(name='Quantidade')
+
+            # Salva para conferência
+            df_historico_geral.to_excel(os.path.join(PASTA_DADOS_SALVOS_GRUPOS, 'historico_geral_anos.xlsx'))
+
+            # Adiciona a chave 'historico_geral' que o visualizacoes.py vai ler
+            resultado_dash['historico_geral'] = df_historico_geral.to_json(orient='split')
+
+        return resultado_dash
