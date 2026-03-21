@@ -1117,6 +1117,7 @@ def anonimizar_nomes(df, coluna_nome='Nome'):
     return df_anon
 
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
+
     if modo == 'geral':
         df_total = dfs.get('total', pd.DataFrame())
         if not df_total.empty:
@@ -1126,29 +1127,28 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
     elif modo == 'grupo':
         dfs_grupos = {}
         for k, df in dfs.items():
-            if k != 'total':
+            if k not in ['total', 'historico_geral']:
                 dfs_grupos[k] = df.iloc[[-1]]
         return dfs_grupos
 
     elif modo == 'professor':
         lista_dfs_professores = []
-        grupos_para_usar = [grupo_selecionado] if grupo_selecionado and grupo_selecionado in dfs else [k for k in dfs if k != "total"]
+        for k, df in dfs.items():
 
-        for k in grupos_para_usar:
-            if k == "historico_geral":
+            if k in ["historico_geral", "total"]:
                 continue
-            df = dfs[k]
-            df_filtrado = df.iloc[:-1].copy()  # remove linha de total
+
+            df_filtrado = df.iloc[:-1].copy()
             df_filtrado['Grupo/Programa'] = k
             lista_dfs_professores.append(df_filtrado)
 
         if lista_dfs_professores:
             df_final = pd.concat(lista_dfs_professores, ignore_index=True)
             return {'professores': df_final}
+
         return {'professores': pd.DataFrame()}
 
-    return dfs
-
+    return {}  # <- IMPORTANTE
 
 def parse_stored_data(stored_data):
     """Retorna um dict de DataFrames e a lista de métricas selecionadas (meta) do stored_data.
