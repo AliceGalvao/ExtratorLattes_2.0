@@ -149,7 +149,7 @@ METRICAS_DASH = [
         {'label': 'Ano de Titulação', 'value': 'ANO TITULACAO'},
         {'label': 'Publicações Científicas', 'value': 'PUBLICAÇÕES CIENTÍFICAS'},
         {'label': 'Orientações Concluídas de TCC na UPE', 'value': 'ORIENTAÇÕES CONC. TCC'},
-        {'label': 'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE', 'value': 'ORIENTACOES CONC. ESPECIALIZACAO'}
+        {'label': 'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE', 'value': 'ORIENTAÇÕES CONC. ESPECIALIZAÇÃO'}
 
 ]
 
@@ -168,16 +168,15 @@ MENSAGENS_TUTORIAL = [
     "- Marque as **métricas que deseja extrair** do currículo Lattes de cada pesquisador.\n"
     "- Você pode selecionar **uma ou várias opções**.",
 
-    "**📅 Passo 3 - Defina o Ano de Corte (opcional)**\n"
-    "- Se desejar extrair apenas as produções a partir de um determinado ano, informe esse **Ano de Corte**.\n"
-    "- Caso contrário, **deixe em branco** para considerar **todas as produções**.",
+    "**📅 Passo 3 - Defina o Ano de Corte (Ano de Início e Término)**\n"
+    "- Para extrair apenas as produções a partir de um determinado ano até outro, informe esses **Anos de Corte**.\n"
 
     "**🚀 Passo 4 - Inicie a extração**\n"
     "- Clique no botão **Extrair Informações do Lattes** e aguarde o processamento.\n"
     "- ⚠️ Esse botão só ficará disponível **após a conclusão dos passos anteriores**.",
 
     "**📊 Passo 5 - Visualize os resultados**\n"
-    "- Agora você pode **baixar os dados** como planilha clicando no botão **Salvar Arquivos com Resultados**.\n"
+    "- Agora você pode **baixar os dados** como planilha clicando no botão **Baixar Excel**.\n"
     "- ou **visualizar as métricas** no painel de gráficos do dashboard."
 ]
 

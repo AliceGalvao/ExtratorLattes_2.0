@@ -258,7 +258,7 @@ def processar_resultado(n_clicks, uploaded_file_data_dict, ano_inicio, ano_termi
                 if o3 and 'tcc-conc' in o3:
                     metricas_para_leitor.append('ORIENTAÇÕES CONC. TCC')
                 if o3 and 'conc-esp' in o3:
-                    metricas_para_leitor.append('ORIENTACOES CONC. ESPECIALIZACAO')
+                    metricas_para_leitor.append('ORIENTAÇÕES CONC. ESPECIALIZAÇÃO')
             if o2 and 'andamento' in o2:
                 if o3 and 'mestrado' in o3:
                     metricas_para_leitor.append('O.P MESTRADO AND.')

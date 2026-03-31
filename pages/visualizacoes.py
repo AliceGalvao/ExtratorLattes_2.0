@@ -271,7 +271,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                       "coorientacoes": {"concluido": ["C.O DOUTORADO CONC."], "andamento": ["C.O DOUTORADO AND."]}},
         "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []},
                "coorientacoes": {"concluido": [], "andamento": []}},
-        "conc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+        "conc-esp": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. ESPECIALIZAÇÃO"], "andamento": []},
                      "coorientacoes": {"concluido": [], "andamento": []}},
         "tcc-conc": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. TCC"], "andamento": []},
                      "coorientacoes": {"concluido": [], "andamento": []}}
@@ -288,7 +288,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
 
         todas_metricas = ["O.P MESTRADO CONC.", "O.P MESTRADO AND.", "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
                           "O.P DOUTORADO CONC.", "O.P DOUTORADO AND.", "C.O DOUTORADO CONC.", "C.O DOUTORADO AND.",
-                          "ORIENTAÇÕES I.C", "ORIENTACOES CONC. ESPECIALIZACAO", "ORIENTAÇÕES CONC. TCC"]
+                          "ORIENTAÇÕES I.C", "ORIENTAÇÕES CONC. ESPECIALIZAÇÃO", "ORIENTAÇÕES CONC. TCC"]
         if metricas: todas_metricas = [c for c in todas_metricas if c in metricas]
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
@@ -672,22 +672,14 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_orientacoes = ["O.P Mestrado Conc.", "O.P Mestrado And.", "C.O Mestrado Conc.", "C.O Mestrado And.",
-                                    "O.P Doutorado Conc.","O.P Doutorado And.", "C.O Doutorado Conc.","C.O Doutorado And.",
-                                     "O.P Ic Conc.", "Orientacoes Conc. Especializacao", "Orientações Conc. Tcc"]
+            metricas_orientacoes = ["O.P MESTRADO CONC.", "O.P MESTRADO AND.", "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
+                                    "O.P DOUTORADO CONC.","O.P DOUTORADO AND.", "C.O DOUTORADO CONC.","C.O DOUTORADO AND.",
+                                     "O.P IC CONC.", "ORIENTAÇÕES CONC. ESPECIALIZAÇÃO", "ORIENTAÇÕES CONC. TCC"]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_orientacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
-            if not graficos:
-                exibir = 'SIM' in (check_mediana or [])
-                modo = modo_atual if modo_atual else 'geral'
-                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-                status_filtro = status if modo != 'geral' else 'ambos'
-                tipo_filtro = tipo if modo != 'geral' else 'todos'
-                natureza_filtro = natureza if modo != 'geral' else 'soma'
-                return gerar_graficos_orientacoes(dfs_filtrados, status_filtro, tipo_filtro, natureza_filtro, modo, metricas, exibir_mediana=exibir)
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             import traceback
@@ -735,15 +727,10 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_registros = ["Registros de Sw", "Patentes"]
+            metricas_registros = ["REGISTROS DE SW", "PATENTES"]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
-            if not graficos:
-                exibir = 'SIM' in (check_mediana or [])
-                modo = modo_atual if modo_atual else 'geral'
-                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-                return gerar_graficos_registros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
@@ -786,17 +773,12 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_publicacoes = ["Publicações Científicas", "Livros Isbn", "Capítulos Isbn", "Pub. Trab. Eventos"]
+            metricas_publicacoes = ["PUBLICAÇÕES CIENTÍFICAS", "LIVROS ISBN", "CAPÍTULOS ISBN", "PUB. TRAB. EVENTOS"]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_publicacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
-            if not graficos:
-                exibir = 'SIM' in (check_mediana or [])
-                modo = modo_atual if modo_atual else 'geral'
-                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-                return gerar_graficos_publicacoes(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
@@ -839,17 +821,11 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_outros = ["Eventos","Eventos Organizados", "Pub. Tec. E Art."]
+            metricas_outros = ["EVENTOS ORGANIZADOS", "PUB. TEC. E ART."]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
-            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
-            if not graficos:
-                exibir = 'SIM' in (check_mediana or [])
-                modo = modo_atual if modo_atual else 'geral'
-                dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-                return gerar_graficos_outros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
@@ -1257,7 +1233,7 @@ def parse_stored_data_with_anos(stored_data):
     return dfs, metricas, anos
 
 
-def gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None):
+def gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=None, ano_termino=None):
     
     graficos = []
     
@@ -1270,8 +1246,29 @@ def gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None):
     if df_historico.empty:
         return []
     
+    # Determina o intervalo de anos para preencher
+    if ano_inicio is not None and ano_termino is not None:
+        anos_completos = list(range(int(ano_inicio), int(ano_termino) + 1))
+    else:
+        anos_completos = sorted(df_historico['Ano'].unique().astype(int).tolist())
+    
     for metrica in sorted(df_historico['Metrica'].unique()):
-        df_metrica = df_historico[df_historico['Metrica'] == metrica].sort_values('Ano')
+        df_metrica = df_historico[df_historico['Metrica'] == metrica].copy()
+        
+        # Cria DataFrame com todos os anos do intervalo
+        df_completo = pd.DataFrame({'Ano': anos_completos})
+        df_completo['Ano'] = df_completo['Ano'].astype(int)
+        
+        # Agrupa por Ano e Quantidade (caso tenha múltiplos grupos)
+        if 'Grupo' in df_metrica.columns:
+            df_metrica = df_metrica.groupby(['Ano'], as_index=False)['Quantidade'].sum()
+        
+        df_metrica['Ano'] = df_metrica['Ano'].astype(int)
+        
+        # Faz merge para manter todos os anos, preenchendo com 0
+        df_metrica = df_completo.merge(df_metrica[['Ano', 'Quantidade']], on='Ano', how='left').fillna(0)
+        df_metrica['Quantidade'] = df_metrica['Quantidade'].astype(int)
+        df_metrica = df_metrica.sort_values('Ano')
         
         fig = px.bar(
             df_metrica,
@@ -1288,7 +1285,7 @@ def gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None):
             xaxis=dict(
                 title=None,
                 type='linear',
-                dtick=1 if len(df_metrica) <= 15 else None,
+                dtick=1 if len(anos_completos) <= 15 else None,
                 tickangle=-45,
                 automargin=True
             ),
@@ -1298,7 +1295,7 @@ def gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None):
             showlegend=False
         )
         
-        n_anos = len(df_metrica)
+        n_anos = len(anos_completos)
         largura = max(400, min(n_anos * 80 + 100, 1000))
         
         graficos.append(html.Div(
