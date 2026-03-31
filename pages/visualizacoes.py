@@ -634,7 +634,7 @@ def guardar_modo_atual(btn_geral, btn_grupo, btn_professor):
     prevent_initial_call=True
 )
 def resetar_filtros_ao_mudar_modo(modo_selecionado):
-    return 'ambos', 'todos', 'soma', None, None, None
+    return 'ambos', 'todos', 'soma', None, None, None, None
 
 
 @callback(
