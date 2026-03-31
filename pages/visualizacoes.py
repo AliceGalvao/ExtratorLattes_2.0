@@ -948,7 +948,7 @@ def popular_opcoes_de_grupo(stored_data):
     if not stored_data:
         return [], [], [], []
     dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
-    grupos = [{"label": g, "value": g} for g in dfs.keys() if g != "total"]
+    grupos = [{"label": g, "value": g} for g in dfs.keys() if g not in ["total", "historico_geral"]]
     return grupos, grupos, grupos, grupos
 
 
@@ -1136,6 +1136,9 @@ def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
         for k, df in dfs.items():
 
             if k in ["historico_geral", "total"]:
+                continue
+            
+            if grupo_selecionado and k != grupo_selecionado:
                 continue
 
             df_filtrado = df.iloc[:-1].copy()
