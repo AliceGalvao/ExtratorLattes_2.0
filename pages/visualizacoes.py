@@ -668,6 +668,10 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
+            
+            if grupo_selecionado:
+                df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
+            
             metricas_orientacoes = ["O.P Mestrado Conc.", "O.P Mestrado And.", "C.O Mestrado Conc.", "C.O Mestrado And.",
                                     "O.P Doutorado Conc.","O.P Doutorado And.", "C.O Doutorado Conc.","C.O Doutorado And.",
                                      "O.P Ic Conc.", "Orientacoes Conc. Especializacao", "Orientações Conc. Tcc"]
@@ -727,9 +731,11 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
             
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
-            metricas_registros = ["Registros de SW", "Patentes"]
-
-            df_historico = df_historico[df_historico['Metrica'].isin(metricas_registros)]
+            
+            if grupo_selecionado:
+                df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
+            
+            metricas_registros = ["Registros de Sw", "Patentes"]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
@@ -776,6 +782,9 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
             
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
+            
+            if grupo_selecionado:
+                df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
             metricas_publicacoes = ["Publicações Científicas", "Livros Isbn", "Capítulos Isbn", "Pub. Trab. Eventos"]
 
@@ -826,6 +835,9 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
             
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
+            
+            if grupo_selecionado:
+                df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
             metricas_outros = ["Eventos","Eventos Organizados", "Pub. Tec. E Art."]
 
@@ -1246,7 +1258,7 @@ def parse_stored_data_with_anos(stored_data):
 
 
 def gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None):
-    """Gera histogramas agrupados por métrica usando o histórico por ano"""
+    
     graficos = []
     
     if df_historico.empty:

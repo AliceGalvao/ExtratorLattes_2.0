@@ -250,19 +250,19 @@ class Leitor:
                 df = pd.DataFrame(dados_pesquisadores)
                 df = df.loc[:, ~df.columns.duplicated()]
 
-                # colete historico bruto dos pesquisadores do programa
                 for p in pesquisadores_programa:
                     if hasattr(p, 'historico_bruto'):
-                        historico_acumulado.extend(p.historico_bruto)
+                        for item in p.historico_bruto:
+                            item_com_programa = item.copy() if isinstance(item, dict) else item
+                            if isinstance(item_com_programa, dict):
+                                item_com_programa['Grupo'] = programa
+                            historico_acumulado.append(item_com_programa)
 
-                # linha de totais (soma apenas das colunas numéricas)
                 linha_programa_full = {col: df[col].sum() for col in df.columns if df[col].dtype in [int, float]}
-                # prepara objeto de totais que será adicionado ao total geral
                 if metricas:
                     cols_totais = list(metricas)
                     if 'PUBLICAÇÕES CIENTÍFICAS' in metricas:
                         cols_totais += LISTA_QUALIS
-                    # mantem apenas as métricas solicitadas que existam
                     linha_programa = {c: linha_programa_full.get(c, 0) for c in cols_totais}
                 else:
                     linha_programa = linha_programa_full.copy()
@@ -271,7 +271,6 @@ class Leitor:
                 linha_programa['ID LATTES'] = 'Não possui'
                 df_totais = pd.DataFrame([linha_programa])
 
-                # concatena e garante colunas únicas
                 df_concat = pd.concat([df, df_totais], ignore_index=True)
                 df_concat = df_concat.loc[:, ~df_concat.columns.duplicated()]
 
@@ -339,8 +338,7 @@ class Leitor:
                 df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
                 df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
 
-                # Agrupa por Ano e Métrica padronizada
-                df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica']).size().reset_index(name='Quantidade')
+                df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica', 'Grupo'], dropna=False).size().reset_index(name='Quantidade')
                 dict_retorno['historico_geral'] = df_historico_geral.to_json(orient='split')
 
             # limpa pasta programas
@@ -381,7 +379,11 @@ class Leitor:
 
             for p in pesquisadores_grupo:
                 if hasattr(p, 'historico_bruto'):
-                    historico_acumulado.extend(p.historico_bruto)
+                    for item in p.historico_bruto:
+                        item_com_grupo = item.copy() if isinstance(item, dict) else item
+                        if isinstance(item_com_grupo, dict):
+                            item_com_grupo['Grupo'] = nome_grupo
+                        historico_acumulado.append(item_com_grupo)
 
             dados_pesquisadores = [p.series_eixo_ensino() for p in pesquisadores_grupo]
             df = pd.DataFrame(dados_pesquisadores)
@@ -445,10 +447,9 @@ class Leitor:
             df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
             df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
 
-            # Agrupa por Ano e Métrica para somar as quantidades
-            df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica']).size().reset_index(name='Quantidade')
+            # Agrupa por Ano, Métrica e Grupo para somar as quantidades
+            df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica', 'Grupo'], dropna=False).size().reset_index(name='Quantidade')
 
-            # Salva para conferência
             df_historico_geral.to_excel(os.path.join(PASTA_DADOS_SALVOS_GRUPOS, 'historico_geral_anos.xlsx'))
 
             # Adiciona a chave 'historico_geral' que o visualizacoes.py vai ler
