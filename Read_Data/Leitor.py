@@ -21,7 +21,6 @@ class Leitor:
         download_path = None
 
     def le_programas(self):
-        # lê os programas existentes
         with open('./programas.txt', 'r') as arquivo:
             programas = arquivo.read()
         PROGRAMAS = programas.split(',')
@@ -84,7 +83,7 @@ class Leitor:
                                                                            DETALHAMENTO_DE_OUTRAS_ORIENTACOES_CONCLUIDAS,
                                                                            DADOS_BASICOS_DE_OUTRAS_ORIENTACOES_CONCLUIDAS,
                                                                            [NATUREZA_TCC], True)
-        orientacoes_tcc_tcr_especializao_concluidas = leitor_xml.extrair_outras_orientacoes(
+        orientacoes_tcc_tcr_especializacao_concluidas = leitor_xml.extrair_outras_orientacoes(
             OUTRAS_ORIENTACOES_CONCLUIDAS, DETALHAMENTO_DE_OUTRAS_ORIENTACOES_CONCLUIDAS,
             DADOS_BASICOS_DE_OUTRAS_ORIENTACOES_CONCLUIDAS, [NATUREZA_TCC_TCR_ESPECIALIZACAO], True)
 
@@ -129,7 +128,7 @@ class Leitor:
         mapear_anos(patentes,'PATENTES')
         mapear_anos(orientacoes_ic_concluidas, 'O.P IC CONC.')
         mapear_anos(orientacoes_tcc_concluidas, 'ORIENTAÇÕES CONC. TCC')
-        mapear_anos(orientacoes_tcc_tcr_especializao_concluidas, 'ORIENTACOES CONC. ESPECIALIZACAO')
+        mapear_anos(orientacoes_tcc_tcr_especializacao_concluidas, 'ORIENTAÇÕES CONC. ESPECIALIZAÇÃO')
         mapear_anos(tecnicos_artisticos_nao_indexados, 'PUB. TEC. E ART.')
         mapear_anos(eventos_organizados, 'EVENTOS ORGANIZADOS')
         #
@@ -139,7 +138,7 @@ class Leitor:
         mapear_anos(softwares,'REGISTROS DE SW')
 
 
-        # --- MONTAGEM DO OBJETO PESQUISADOR ---
+        # MONTAGEM DO OBJETO PESQUISADOR 
         pesquisador = Pesquisador(
             nome_e_id_bolsista[0], nome_e_id_bolsista[1],
             nome_e_id_bolsista[2], nome_e_id_bolsista[3],
@@ -160,7 +159,7 @@ class Leitor:
         pesquisador.projetos_desenvolvimento = projetos_desenvolvimento
         pesquisador.softwares = softwares
         pesquisador.orientacoes_tcc = orientacoes_tcc_concluidas
-        pesquisador.orientacoes_tcc_tcr_especializacao = orientacoes_tcc_tcr_especializao_concluidas
+        pesquisador.orientacoes_tcc_tcr_especializacao = orientacoes_tcc_tcr_especializacao_concluidas
 
         pesquisador.historico_bruto = historico_itens
 
@@ -313,29 +312,29 @@ class Leitor:
                 df_historico_geral['Metrica'] = df_historico_geral['Metrica'].astype(str).str.strip()
                 # Mapa de canonicalização (chave: upper stripped) -> valor padronizado
                 canonical_map = {
-        'Orientação Principal de Mestrado Concluída': 'O.P MESTRADO CONC.',
-        'Orientação Principal de Doutorado Concluída': 'O.P DOUTORADO CONC.',
-        'Co-orientação de Mestrado Concluída': 'C.O MESTRADO CONC.',
-        'Co-orientação de Doutorado Concluída': 'C.O DOUTORADO CONC.',
-        'Orientação Principal de Mestrado Em Andamento': 'O.P MESTRADO AND.',
-        'Orientação Principal de Doutorado Em Andamento':'O.P DOUTORADO AND.',
-        'Co-orientação de Mestrado Em Andamento': 'C.O MESTRADO AND.',
-        'Co-orientação de Doutorado Em Andamento': 'C.O DOUTORADO AND.',
-        'Orientação de Iniciação Científica': 'ORIENTAÇÕES I.C',
-        'Depósito ou Registro de Patentes': 'PATENTES',
-        'Registros de Software': 'REGISTROS DE SW',
-        'Publicação de Livros com ISBN': 'LIVROS ISBN',
-        'Publicação de Capítulos com ISBN': 'CAPÍTULOS ISBN',
-        'Publicação Técnica ou Artística': 'PUB. TEC. E ART.',
-        'Publicação de Trabalho em Eventos': 'PUB. TRAB. EVENTOS',
-        'Eventos Organizados': 'EVENTOS ORGANIZADOS',
-        'Ano de Titulação': 'ANO TITULACAO',
-        'Publicações Científicas': 'PUBLICAÇÕES CIENTÍFICAS',
-        'Orientações Concluídas de TCC na UPE': 'ORIENTAÇÕES CONC. TCC',
-        'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE':'ORIENTACOES CONC. ESPECIALIZACAO'
+        'PUBLICAÇÃO DE LIVROS COM ISBN': 'LIVROS ISBN',
+        'PUBLICAÇÃO DE CAPÍTULOS COM ISBN': 'CAPÍTULOS ISBN',
+        'PUBLICAÇÃO TÉCNICA OU ARTÍSTICA': 'PUB. TEC. E ART.',
+        'PUBLICAÇÃO DE TRABALHO EM EVENTOS': 'PUB. TRAB. EVENTOS',
+        'EVENTOS ORGANIZADOS': 'EVENTOS ORGANIZADOS',
+        'ANO DE TITULAÇÃO': 'ANO TITULACAO',
+        'PUBLICAÇÕES CIENTÍFICAS': 'PUBLICAÇÕES CIENTÍFICAS',
+        'ORIENTAÇÕES CONCLUÍDAS DE TCC NA UPE': 'ORIENTAÇÕES CONC. TCC',
+        'ORIENTAÇÃO DE TCC/TCR DE APERFEIÇOAMENTO/ESPECIALIZAÇÃO NA UPE':'ORIENTAÇÕES CONC. ESPECIALIZAÇÃO',
+        'ORIENTAÇÃO PRINCIPAL DE MESTRADO CONCLUÍDA': 'O.P MESTRADO CONC.',
+        'ORIENTAÇÃO PRINCIPAL DE DOUTORADO CONCLUÍDA': 'O.P DOUTORADO CONC.',
+        'CO-ORIENTAÇÃO DE MESTRADO CONCLUÍDA': 'C.O MESTRADO CONC.',
+        'CO-ORIENTAÇÃO DE DOUTORADO CONCLUÍDA': 'C.O DOUTORADO CONC.',
+        'ORIENTAÇÃO PRINCIPAL DE MESTRADO EM ANDAMENTO': 'O.P MESTRADO AND.',
+        'ORIENTAÇÃO PRINCIPAL DE DOUTORADO EM ANDAMENTO':'O.P DOUTORADO AND.',
+        'CO-ORIENTAÇÃO DE MESTRADO EM ANDAMENTO': 'C.O MESTRADO AND.',
+        'CO-ORIENTAÇÃO DE DOUTORADO EM ANDAMENTO': 'C.O DOUTORADO AND.',
+        'ORIENTAÇÃO DE INICIAÇÃO CIENTÍFICA': 'ORIENTAÇÕES I.C',
+        'DEPÓSITO OU REGISTRO DE PATENTES': 'PATENTES',
+        'REGISTROS DE SOFTWARE': 'REGISTROS DE SW'
         }
                 df_historico_geral['Metrica_upper'] = df_historico_geral['Metrica'].str.upper().str.replace('\u00ad','')
-                df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
+                df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x))
                 df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
 
                 df_historico_geral = df_historico_geral.groupby(['Ano', 'Metrica', 'Grupo'], dropna=False).size().reset_index(name='Quantidade')
@@ -393,7 +392,7 @@ class Leitor:
             linha_grupo['Nome'] = nome_grupo
             linha_grupo['ID LATTES'] = grupo
 
-            # Salva o Excel individual do grupo (seu código original)
+            # Salva o Excel individual do grupo 
             df_totais = pd.DataFrame([linha_grupo])
             df_concat = pd.concat([df, df_totais], ignore_index=True)
             diretorio = os.path.join(PASTA_DADOS_SALVOS_GRUPOS, grupo)
@@ -422,29 +421,29 @@ class Leitor:
             # Normaliza e canonicaliza os nomes de métrica antes de agrupar
             df_historico_geral['Metrica'] = df_historico_geral['Metrica'].astype(str).str.strip()
             canonical_map = {
-        'Orientação Principal de Mestrado Concluída': 'O.P MESTRADO CONC.',
-        'Orientação Principal de Doutorado Concluída': 'O.P DOUTORADO CONC.',
-        'Co-orientação de Mestrado Concluída': 'C.O MESTRADO CONC.',
-        'Co-orientação de Doutorado Concluída': 'C.O DOUTORADO CONC.',
-        'Orientação Principal de Mestrado Em Andamento': 'O.P MESTRADO AND.',
-        'Orientação Principal de Doutorado Em Andamento':'O.P DOUTORADO AND.',
-        'Co-orientação de Mestrado Em Andamento': 'C.O MESTRADO AND.',
-        'Co-orientação de Doutorado Em Andamento': 'C.O DOUTORADO AND.',
-        'Orientação de Iniciação Científica': 'ORIENTAÇÕES I.C',
-        'Depósito ou Registro de Patentes': 'PATENTES',
-        'Registros de Software': 'REGISTROS DE SW',
-        'Publicação de Livros com ISBN': 'LIVROS ISBN',
-        'Publicação de Capítulos com ISBN': 'CAPÍTULOS ISBN',
-        'Publicação Técnica ou Artística': 'PUB. TEC. E ART.',
-        'Publicação de Trabalho em Eventos': 'PUB. TRAB. EVENTOS',
-        'Eventos Organizados': 'EVENTOS ORGANIZADOS',
-        'Ano de Titulação': 'ANO TITULACAO',
-        'Publicações Científicas': 'PUBLICAÇÕES CIENTÍFICAS',
-        'Orientações Concluídas de TCC na UPE': 'ORIENTAÇÕES CONC. TCC',
-        'Orientação de TCC/TCR de Aperfeiçoamento/Especialização na UPE':'ORIENTACOES CONC. ESPECIALIZACAO'
+        'ORIENTAÇÃO PRINCIPAL DE MESTRADO CONCLUÍDA': 'O.P MESTRADO CONC.',
+        'ORIENTAÇÃO PRINCIPAL DE DOUTORADO CONCLUÍDA': 'O.P DOUTORADO CONC.',
+        'CO-ORIENTAÇÃO DE MESTRADO CONCLUÍDA': 'C.O MESTRADO CONC.',
+        'CO-ORIENTAÇÃO DE DOUTORADO CONCLUÍDA': 'C.O DOUTORADO CONC.',
+        'ORIENTAÇÃO PRINCIPAL DE MESTRADO EM ANDAMENTO': 'O.P MESTRADO AND.',
+        'ORIENTAÇÃO PRINCIPAL DE DOUTORADO EM ANDAMENTO':'O.P DOUTORADO AND.',
+        'CO-ORIENTAÇÃO DE MESTRADO EM ANDAMENTO': 'C.O MESTRADO AND.',
+        'CO-ORIENTAÇÃO DE DOUTORADO EM ANDAMENTO': 'C.O DOUTORADO AND.',
+        'ORIENTAÇÃO DE INICIAÇÃO CIENTÍFICA': 'ORIENTAÇÕES I.C',
+        'DEPÓSITO OU REGISTRO DE PATENTES': 'PATENTES',
+        'REGISTROS DE SOFTWARE': 'REGISTROS DE SW',
+        'PUBLICAÇÃO DE LIVROS COM ISBN': 'LIVROS ISBN',
+        'PUBLICAÇÃO DE CAPÍTULOS COM ISBN': 'CAPÍTULOS ISBN',
+        'PUBLICAÇÃO TÉCNICA OU ARTÍSTICA': 'PUB. TEC. E ART.',
+        'PUBLICAÇÃO DE TRABALHO EM EVENTOS': 'PUB. TRAB. EVENTOS',
+        'EVENTOS ORGANIZADOS': 'EVENTOS ORGANIZADOS',
+        'ANO DE TITULAÇÃO': 'ANO TITULACAO',
+        'PUBLICAÇÕES CIENTÍFICAS': 'PUBLICAÇÕES CIENTÍFICAS',
+        'ORIENTAÇÕES CONCLUÍDAS DE TCC NA UPE': 'ORIENTAÇÕES CONC. TCC',
+        'ORIENTAÇÃO DE TCC/TCR DE APERFEIÇOAMENTO/ESPECIALIZAÇÃO NA UPE':'ORIENTAÇÕES CONC. ESPECIALIZAÇÃO'
         }
             df_historico_geral['Metrica_upper'] = df_historico_geral['Metrica'].str.upper().str.replace('\u00ad','')
-            df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x.title()))
+            df_historico_geral['Metrica'] = df_historico_geral['Metrica_upper'].map(lambda x: canonical_map.get(x, x))
             df_historico_geral = df_historico_geral.drop(columns=['Metrica_upper'])
 
             # Agrupa por Ano, Métrica e Grupo para somar as quantidades

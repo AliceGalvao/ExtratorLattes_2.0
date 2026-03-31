@@ -278,7 +278,7 @@ class Pesquisador:
             "C.O DOUTORADO AND.": len(self.quantidades_orientacao_doutorado["C.O DOUTORADO AND."]),
             "ORIENTAÇÕES I.C": len(self.orientacoes_ic),
             "ORIENTAÇÕES CONC. TCC": len(self.orientacoes_tcc),
-            "ORIENTACOES CONC. ESPECIALIZACAO": len(self.orientacoes_tcc_tcr_especializacao),
+            "ORIENTAÇÕES CONC. ESPECIALIZAÇÃO": len(self.orientacoes_tcc_tcr_especializacao),
             "PATENTES": len(self.patentes),
             "REGISTROS DE SW": len(self.softwares),
             "LIVROS ISBN": len(self.publicacoes_livros_ISBN),

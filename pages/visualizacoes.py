@@ -271,7 +271,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
                       "coorientacoes": {"concluido": ["C.O DOUTORADO CONC."], "andamento": ["C.O DOUTORADO AND."]}},
         "ic": {"orientacoes": {"concluido": ["ORIENTAÇÕES I.C"], "andamento": []},
                "coorientacoes": {"concluido": [], "andamento": []}},
-        "conc-esp": {"orientacoes": {"concluido": ["ORIENTACOES CONC. ESPECIALIZACAO"], "andamento": []},
+        "conc-esp": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. ESPECIALIZAÇÃO"], "andamento": []},
                      "coorientacoes": {"concluido": [], "andamento": []}},
         "tcc-conc": {"orientacoes": {"concluido": ["ORIENTAÇÕES CONC. TCC"], "andamento": []},
                      "coorientacoes": {"concluido": [], "andamento": []}}
@@ -288,7 +288,7 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
 
         todas_metricas = ["O.P MESTRADO CONC.", "O.P MESTRADO AND.", "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
                           "O.P DOUTORADO CONC.", "O.P DOUTORADO AND.", "C.O DOUTORADO CONC.", "C.O DOUTORADO AND.",
-                          "ORIENTAÇÕES I.C", "ORIENTACOES CONC. ESPECIALIZACAO", "ORIENTAÇÕES CONC. TCC"]
+                          "ORIENTAÇÕES I.C", "ORIENTAÇÕES CONC. ESPECIALIZAÇÃO", "ORIENTAÇÕES CONC. TCC"]
         if metricas: todas_metricas = [c for c in todas_metricas if c in metricas]
         cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
         df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
@@ -672,9 +672,9 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_orientacoes = ["O.P Mestrado Conc.", "O.P Mestrado And.", "C.O Mestrado Conc.", "C.O Mestrado And.",
-                                    "O.P Doutorado Conc.","O.P Doutorado And.", "C.O Doutorado Conc.","C.O Doutorado And.",
-                                     "O.P Ic Conc.", "Orientacoes Conc. Especializacao", "Orientações Conc. Tcc"]
+            metricas_orientacoes = ["O.P MESTRADO CONC.", "O.P MESTRADO AND.", "C.O MESTRADO CONC.", "C.O MESTRADO AND.",
+                                    "O.P DOUTORADO CONC.","O.P DOUTORADO AND.", "C.O DOUTORADO CONC.","C.O DOUTORADO AND.",
+                                     "O.P IC CONC.", "ORIENTAÇÕES CONC. ESPECIALIZAÇÃO", "ORIENTAÇÕES CONC. TCC"]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_orientacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
@@ -735,7 +735,7 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_registros = ["Registros de Sw", "Patentes"]
+            metricas_registros = ["REGISTROS DE SW", "PATENTES"]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
@@ -786,7 +786,7 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_publicacoes = ["Publicações Científicas", "Livros Isbn", "Capítulos Isbn", "Pub. Trab. Eventos"]
+            metricas_publicacoes = ["PUBLICAÇÕES CIENTÍFICAS", "LIVROS ISBN", "CAPÍTULOS ISBN", "PUB. TRAB. EVENTOS"]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_publicacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
@@ -839,10 +839,9 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
             if grupo_selecionado:
                 df_historico = df_historico[df_historico['Grupo'] == grupo_selecionado]
             
-            metricas_outros = ["Eventos","Eventos Organizados", "Pub. Tec. E Art."]
+            metricas_outros = ["EVENTOS ORGANIZADOS", "PUB. TEC. E ART."]
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
-            df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
             if not graficos:
