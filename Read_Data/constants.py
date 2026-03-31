@@ -169,7 +169,7 @@ MENSAGENS_TUTORIAL = [
     "- Você pode selecionar **uma ou várias opções**.",
 
     "**📅 Passo 3 - Defina o Ano de Corte (Ano de Início e Término)**\n"
-    "- Para extrair apenas as produções a partir de um determinado ano até outro, informe esses **Anos de Corte**."
+    "- Para extrair apenas as produções a partir de um determinado ano até outro, informe esses **Anos de Corte**.",
 
     "**🚀 Passo 4 - Inicie a extração**\n"
     "- Clique no botão **Extrair Informações do Lattes** e aguarde o processamento.\n"
