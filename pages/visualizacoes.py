@@ -97,7 +97,35 @@ html.Div([
                           value=[],
                           style={'textAlign': 'center', 'marginBottom': '10px', 'fontSize': '14px', 'color': '#2c3e50'})
         ]),
-        html.Div(id="filtros-orientacoes-container"),
+        html.Div(id="filtros-orientacoes-container", children=[
+            html.Div(id="filtros-padroes-orientacoes", style={'display': 'flex', 'gap': '20px', 'marginBottom': '15px'}, children=[
+                html.Div([html.Label("Status:", style={'fontWeight': 'bold'}), dcc.Dropdown(
+                    id="filtro-status-orientacoes",
+                    options=[{"label": "Em andamento", "value": "andamento"}, {"label": "Concluído", "value": "concluido"},
+                             {"label": "Ambos", "value": "ambos"}], value="ambos", clearable=False
+                )], style={"display": "inline-block", "marginRight": "10px", 'width': '150px'}),
+                html.Div([html.Label("Tipo:", style={'fontWeight': 'bold'}), dcc.Dropdown(
+                    id="filtro-tipo-orientacoes",
+                    options=[{"label": "IC", "value": "ic"}, {"label": "Mestrado", "value": "mestrado"},
+                             {"label": "Doutorado", "value": "doutorado"}, {"label": "Todos", "value": "todos"},
+                             {"label": "TCC Concluído", "value": "tcc-conc"}, {"label": "Especialização Concluída", "value": "conc-esp"},],
+                    value="todos", clearable=False
+                )], style={"display": "inline-block", "marginRight": "10px", 'width': '150px'}),
+                html.Div([html.Label("Natureza:", style={'fontWeight': 'bold'}), dcc.Dropdown(
+                    id="filtro-natureza-orientacoes", options=[{"label": "Orientações", "value": "orientacoes"},
+                                                               {"label": "Coorientações", "value": "coorientacoes"},
+                                                               {"label": "Soma dos dois", "value": "soma"}], value="soma",
+                    clearable=False
+                )], style={"display": "inline-block", 'width': '150px'}),
+            ]),
+            html.Div(id="wrapper-filtro-orientacoes", style={'display': 'none'}, children=[
+                html.Div([
+                    html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold', 'marginBottom': '5px'}),
+                    dcc.Dropdown(id="filtro-grupo-orientacoes", options=[], clearable=True,
+                                 placeholder="Selecione o grupo")
+                ], style={'width': '300px', 'display': 'flex', 'flexDirection': 'column', 'margin-left': '20px'})
+            ])
+        ]),
         html.Div(id="container-graficos",
                  style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto',
                         'padding': '10px', 'gap': '15px', 'width': '100%'})
@@ -627,7 +655,6 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
 
     dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
     
-    # Se está no modo geral e há anos selecionados, mostra histogramas
     if modo_atual == 'geral' and anos['inicio'] is not None and anos['termino'] is not None:
         if 'historico_geral' not in stored_data:
             return [html.Div("Histórico não disponível.")]
@@ -639,7 +666,6 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             else:
                 df_historico = pd.DataFrame(historico_json)
             
-            # Filtra por período de anos (para todas as métricas disponíveis)
             df_historico = df_historico[(df_historico['Ano'] >= anos['inicio']) & 
                                        (df_historico['Ano'] <= anos['termino'])]
             metricas_orientacoes = ["O.P Mestrado Conc.", "O.P Mestrado And.", "C.O Mestrado Conc.", "C.O Mestrado And.",
@@ -649,25 +675,29 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_orientacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            # Gera histogramas para TODAS as métricas no período
             graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None)
             if not graficos:
-                # fallback para gráficos normais se não houver histórico
                 exibir = 'SIM' in (check_mediana or [])
                 modo = modo_atual if modo_atual else 'geral'
                 dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
-                return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas, exibir_mediana=exibir)
+                status_filtro = status if modo != 'geral' else 'ambos'
+                tipo_filtro = tipo if modo != 'geral' else 'todos'
+                natureza_filtro = natureza if modo != 'geral' else 'soma'
+                return gerar_graficos_orientacoes(dfs_filtrados, status_filtro, tipo_filtro, natureza_filtro, modo, metricas, exibir_mediana=exibir)
             return graficos
         except Exception as e:
             import traceback
             return [html.Div(f"Erro ao gerar histogramas: {str(e)} | {traceback.format_exc()[:200]}")]
     
-    # Caso contrário, mostra gráficos normais
     exibir = 'SIM' in (check_mediana or [])
     modo = modo_atual if modo_atual else 'geral'
     dfs_filtrados = filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado)
+    
+    status_filtro = status if modo != 'geral' else 'ambos'
+    tipo_filtro = tipo if modo != 'geral' else 'todos'
+    natureza_filtro = natureza if modo != 'geral' else 'soma'
 
-    return gerar_graficos_orientacoes(dfs_filtrados, status, tipo, natureza, modo, metricas, exibir_mediana=exibir)
+    return gerar_graficos_orientacoes(dfs_filtrados, status_filtro, tipo_filtro, natureza_filtro, modo, metricas, exibir_mediana=exibir)
 
 
 @callback(
@@ -684,7 +714,6 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
 
     dfs, metricas, anos = parse_stored_data_with_anos(stored_data)
     
-    # Se está no modo geral e há anos selecionados, mostra histogramas
     if modo_atual == 'geral' and anos['inicio'] is not None and anos['termino'] is not None:
         if 'historico_geral' not in stored_data:
             return [html.Div("Histórico não disponível.")]
@@ -819,45 +848,18 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
 
     return gerar_graficos_outros(dfs_filtrados, modo, metricas, exibir_mediana=exibir)
 
-@callback(
-    Output("filtros-orientacoes-container", "children"),
-    Input("checklist-viz", "value")
-)
-def mostrar_filtros_orientacoes(selected_viz):
-    if "orientacoes" not in selected_viz:
-        return html.Div()
-    filtros_padrao = html.Div([
-        html.Div([html.Label("Status:", style={'fontWeight': 'bold'}), dcc.Dropdown(
-            id="filtro-status-orientacoes",
-            options=[{"label": "Em andamento", "value": "andamento"}, {"label": "Concluído", "value": "concluido"},
-                     {"label": "Ambos", "value": "ambos"}], value="ambos", clearable=False
-        )], style={"display": "inline-block", "marginRight": "10px", 'width': '150px'}),
-        html.Div([html.Label("Tipo:", style={'fontWeight': 'bold'}), dcc.Dropdown(
-            id="filtro-tipo-orientacoes",
-            options=[{"label": "IC", "value": "ic"}, {"label": "Mestrado", "value": "mestrado"},
-                     {"label": "Doutorado", "value": "doutorado"}, {"label": "Todos", "value": "todos"},
-                     {"label": "TCC Concluído", "value": "tcc-conc"}, {"label": "Especialização Concluída", "value": "conc-esp"},],
-            value="todos",
 
-            clearable=False
-        )], style={"display": "inline-block", "marginRight": "10px", 'width': '150px'}),
-        html.Div([html.Label("Natureza:", style={'fontWeight': 'bold'}), dcc.Dropdown(
-            id="filtro-natureza-orientacoes", options=[{"label": "Orientações", "value": "orientacoes"},
-                                                       {"label": "Coorientações", "value": "coorientacoes"},
-                                                       {"label": "Soma dos dois", "value": "soma"}], value="soma",
-            clearable=False
-        )], style={"display": "inline-block", 'width': '150px'}),
-    ], style={"display": "flex", "gap": "20px"})
-    filtro_condicional = html.Div(
-        id='wrapper-filtro-orientacoes', style={'display': 'none'},
-        children=[
-            html.Div([
-                html.Label("Filtrar por Grupo:", style={'fontWeight': 'bold'}),
-                dcc.Dropdown(id="filtro-grupo-orientacoes", options=[], clearable=True, placeholder="Todos os grupos")
-            ], style={'width': '300px', 'marginLeft': '20px'})
-        ]
-    )
-    return html.Div([filtros_padrao, filtro_condicional], style={'display': 'flex', 'alignItems': 'center'})
+
+@callback(
+    Output("filtros-padroes-orientacoes", "style"),
+    Input('store-modo-atual', 'data')
+)
+def mostrar_ocultar_filtros_padroes_orientacoes(modo_atual):
+    """Oculta filtros padrão (status, tipo, natureza) no modo geral"""
+    if modo_atual == 'geral':
+        return {'display': 'none'}
+    else:
+        return {'display': 'flex', 'gap': '20px', 'marginBottom': '15px'}
 
 
 @callback(
@@ -877,45 +879,30 @@ def gerenciar_visibilidade_mediana(modo_atual):
 
 @callback(
     Output("wrapper-filtro-publicacoes", "style"),
-    Input("btn-professor", "n_clicks"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks")
+    Input('store-modo-atual', 'data')
 )
-def mostrar_ocultar_filtro_grupo_publicacoes(btn_professor, btn_geral, btn_grupo):
-    ctx = callback_context
-    if not ctx.triggered: return {'display': 'none'}
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if btn_id == 'btn-professor':
+def mostrar_ocultar_filtro_grupo_publicacoes(modo_atual):
+    if modo_atual in ['btn-professor', 'btn-geral', 'professor', 'geral']:
         return {'display': 'block'}
     else:
         return {'display': 'none'}
 
 @callback(
     Output("wrapper-filtro-outros", "style"),
-    Input("btn-professor", "n_clicks"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks")
+    Input('store-modo-atual', 'data')
 )
-def mostrar_ocultar_filtro_grupo_outros(btn_professor, btn_geral, btn_grupo):
-    ctx = callback_context
-    if not ctx.triggered: return {'display': 'none'}
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if btn_id == 'btn-professor':
+def mostrar_ocultar_filtro_grupo_outros(modo_atual):
+    if modo_atual in ['btn-professor', 'btn-geral', 'professor', 'geral']:
         return {'display': 'block'}
     else:
         return {'display': 'none'}
 
 @callback(
     Output("wrapper-filtro-orientacoes", "style"),
-    Input("btn-professor", "n_clicks"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks")
+    Input('store-modo-atual', 'data')
 )
-def mostrar_ocultar_filtro_grupo_orientacoes(btn_professor, btn_geral, btn_grupo):
-    ctx = callback_context
-    if not ctx.triggered: return {'display': 'none'}
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if btn_id == 'btn-professor':
+def mostrar_ocultar_filtro_grupo_orientacoes(modo_atual):
+    if modo_atual in ['btn-professor', 'btn-geral', 'professor', 'geral']:
         return {'display': 'block'}
     else:
         return {'display': 'none'}
@@ -923,15 +910,10 @@ def mostrar_ocultar_filtro_grupo_orientacoes(btn_professor, btn_geral, btn_grupo
 
 @callback(
     Output("wrapper-filtro-registros", "style"),
-    Input("btn-professor", "n_clicks"),
-    Input("btn-geral", "n_clicks"),
-    Input("btn-grupo", "n_clicks")
+    Input('store-modo-atual', 'data')
 )
-def mostrar_ocultar_filtro_grupo_registros(btn_professor, btn_geral, btn_grupo):
-    ctx = callback_context
-    if not ctx.triggered: return {'display': 'none'}
-    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if btn_id == 'btn-professor':
+def mostrar_ocultar_filtro_grupo_registros(modo_atual):
+    if modo_atual in ['btn-professor', 'btn-geral', 'professor', 'geral']:
         return {'display': 'block'}
     else:
         return {'display': 'none'}
@@ -1119,6 +1101,10 @@ def anonimizar_nomes(df, coluna_nome='Nome'):
 def filtrar_dfs_para_graficos(dfs, modo, grupo_selecionado=None):
 
     if modo == 'geral':
+        if grupo_selecionado and grupo_selecionado in dfs:
+            df_grupo = dfs[grupo_selecionado]
+            return {grupo_selecionado: df_grupo.iloc[[-1]]}
+        
         df_total = dfs.get('total', pd.DataFrame())
         if not df_total.empty:
             return {'total': df_total.iloc[[-1]]}
@@ -1186,7 +1172,7 @@ def parse_stored_data(stored_data):
         except Exception:
             continue
 
-    # Normaliza metricas: mantém apenas métricas que existem nas colunas dos DataFrames
+    # mantém apenas métricas que existem nas colunas dos DataFrames
     if dfs:
         available_metrics = set()
         for df in dfs.values():
