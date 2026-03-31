@@ -13,7 +13,7 @@ Acessar o Putty:
 
 Para rodar o código dentro da máquina da UPE:
 - Entrar no repositório (repositório atual sistemas/ExtratorLattes_2.0)
-  *Obs: usar o comando 'ls' se houver dificuldade para encontrar a pasta*
+  - *Obs: usar o comando 'ls' se houver dificuldade para encontrar a pasta*
 - Ativar o amiente virtual
 - para rodar 'python run app.py'
 -> 'git checkout' par a ir para a branch escolhida
@@ -47,8 +47,8 @@ Comandos muito utilizados no Putty:
 
 Sobre o deploy:
 - sudo suporte/extrator_lattes/deploy_old.sh
-  *- Obs1: deve estar fora de 'suporte' use 'cd ..' e 'ls' para conseguir navegar entre as pastas
-  - Obs2: a senha é a mesma do usuario:sistemas*
+  - *Obs1: deve estar fora de 'suporte' use 'cd ..' e 'ls' para conseguir navegar entre as pastas*
+  - *Obs2: a senha é a mesma do usuario:sistemas*
 - systemctl daemon-reload
 - sudo systemctl status dash_app.service (aepnas para verificar o status do serviço)
 
