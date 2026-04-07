@@ -4,7 +4,7 @@ Meio de contato para as infos (_ususario + senha + arquivo de confuguração_ da
 infraestrutura.dtic@upe.br
 
 Acessar o Putty:
-- baixar a versão adequada em --> https://openvpn.net/connect-docs/connect-for-windows.html
+- baixar a versão adequada da VPN
 - Configurar a VPN (com as infos fornecidas)
 - Baixe o Putty --> https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
 - Configurar o Putty (com as infos fornecidas)
@@ -18,7 +18,7 @@ Para rodar o código dentro da máquina da UPE:
 - para rodar 'python run app.py'
 -> 'git checkout' par a ir para a branch escolhida
 --> Lembrar de dar 'git pull' para garantir que o repositório está atualizado
----> É possível fazer alterações diretamente pelo put usando 'nano' (não recomendado)
+---> É possível fazer alterações diretamente pelo Putty usando 'nano' (não recomendado)
 ----> Git push para enviar para esse repositório (provavelmente precisará de um token==senha para prosseguir) *
 
 Comandos muito utilizados no Putty:
