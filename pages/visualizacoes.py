@@ -376,35 +376,40 @@ def gerar_graficos_orientacoes(dfs, status, tipo, natureza, modo, metricas=None,
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
 def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_registros = ["REGISTROS DE SW", "PATENTES"]
+    todas_metricas = metricas_registros
     graficos = []
-    df_plot_list = []
 
-    for nome, df in dfs.items():
-        if modo == 'geral' and nome == 'total':
-            df_tmp = df.copy(); df_tmp['X'] = 'Total'; df_plot_list.append(df_tmp)
-        elif modo == 'grupo' and nome != 'total':
-            df_tmp = df.iloc[[-1]].copy(); df_tmp['X'] = nome; df_plot_list.append(df_tmp)
-        elif modo == 'professor' and nome != 'total':
-            df_tmp = df.copy(); df_tmp['X'] = df_tmp.get('Nome', df_tmp.columns[0]); df_plot_list.append(df_tmp)
+    if modo == 'professor':
+        df_total = dfs.get("professores", pd.DataFrame()).copy()
+        if df_total.empty: return []
+        if 'Nome' in df_total.columns: df_total = df_total[~df_total['Nome'].astype(str).str.upper().str.contains('TOTAL')]
+        cols_to_agg = [c for c in todas_metricas if c in df_total.columns]
+        df_total = df_total.groupby('Nome', as_index=False)[cols_to_agg].sum()
+        df_total['X'] = df_total['Nome']
+    elif modo == 'geral':
+        df_total = dfs.get("total", pd.DataFrame()).copy(); df_total['X'] = "Total"
+    elif modo == 'grupo':
+        df_plot_list = [df.copy().assign(X=nome) for nome, df in dfs.items() if nome != "total"]
+        if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
+        df_total = pd.concat(df_plot_list, ignore_index=True)
+    else: return [html.Div("Modo inválido.")]
 
-    if not df_plot_list: return [html.Div("Nenhum dado disponível.")]
-    df_total = pd.concat(df_plot_list, ignore_index=True)
-    if metricas is not None: metricas_registros = [c for c in metricas_registros if c in metricas]
+    if metricas is not None: todas_metricas = [c for c in todas_metricas if c in metricas]
 
-    for col in metricas_registros:
-        if col not in df_total.columns: continue
-        df_melt = pd.DataFrame({"X": df_total['X'], "Quantidade": df_total[col]}).sort_values("Quantidade", ascending=False)
+    for col in todas_metricas:
+        if not any(col in df.columns for df in dfs.values()): continue
+        df_plot = df_total.groupby("X", as_index=False)[col].sum().rename(columns={col: "Quantidade"}).sort_values("Quantidade", ascending=False)
         
         if modo == 'professor':
-            mapa_renomeacao = {df_melt['X'].iloc[i]: f'P{i+1}' for i in range(len(df_melt))}
-            df_melt['X'] = df_melt['X'].map(mapa_renomeacao)
+            mapa_renomeacao = {df_plot['X'].iloc[i]: f'P{i+1}' for i in range(len(df_plot))}
+            df_plot['X'] = df_plot['X'].map(mapa_renomeacao)
         
-        fig = px.bar(df_melt, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
+        fig = px.bar(df_plot, x="X", y="Quantidade", title=col, template="plotly_white", text_auto=True)
 
         if exibir_mediana:
             try:
-                if len(df_melt) > 0 and modo != 'geral':
-                    med_l = float(df_melt['Quantidade'].median())
+                if len(df_plot) > 0 and modo != 'geral':
+                    med_l = float(df_plot['Quantidade'].median())
                     med_g = MEDIANAS_GERAIS.get(col, 0) if modo == 'professor' else None
                     if med_g is not None and med_l == med_g:
                         fig.add_hline(y=med_l, line_dash='dash', line_color='crimson',
@@ -423,8 +428,8 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
 
         fig.update_traces(textposition='inside')
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_melt["X"]),
-                          yaxis=dict(title=None),margin=dict(l=40, r=120, t=65, b=80))
+                          xaxis=dict(title=None, tickangle=-45, automargin=True, categoryorder="array", categoryarray=df_plot["X"]),
+                          yaxis=dict(title=None), margin=dict(l=40, r=120, t=65, b=80))
         largura, altura = ajustar_tamanho_grafico(df_total, altura_min=200)
         try:
             largura_val = max(int(largura.replace('px', '')), 420)
@@ -452,6 +457,7 @@ def gerar_graficos_registros(dfs, modo, metricas=None, exibir_mediana=False):
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
+
 def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_publicacoes = ['PUBLICAÇÕES CIENTÍFICAS', 'LIVROS ISBN', 'CAPÍTULOS ISBN', 'PUB. TRAB. EVENTOS']
     todas_metricas = metricas_publicacoes
@@ -535,6 +541,7 @@ def gerar_graficos_publicacoes(dfs, modo, metricas=None, exibir_mediana=False):
             }
         ))
     return html.Div(graficos, style={'display': 'flex', 'flexDirection': 'row', 'flexWrap': 'nowrap', 'overflowX': 'auto', 'gap': '15px', 'padding': '10px', 'height': '100%'})
+
 def gerar_graficos_outros(dfs, modo, metricas=None, exibir_mediana=False):
     metricas_outros = ['EVENTOS ORGANIZADOS', 'PUB. TEC. E ART.']
     todas_metricas = metricas_outros
@@ -679,7 +686,8 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_orientacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_orientacoes]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             import traceback
@@ -730,7 +738,8 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
             metricas_registros = ["REGISTROS DE SW", "PATENTES"]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_registros]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
@@ -778,7 +787,8 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_publicacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_publicacoes]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
@@ -825,7 +835,8 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_outros]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
