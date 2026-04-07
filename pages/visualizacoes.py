@@ -686,7 +686,8 @@ def atualizar_graficos_orientacoes(selected_viz, modo_atual, status, tipo, natur
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_orientacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_orientacoes]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             import traceback
@@ -737,7 +738,8 @@ def atualizar_graficos_registros(selected_viz, modo_atual, grupo_selecionado, ch
             metricas_registros = ["REGISTROS DE SW", "PATENTES"]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_registros]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
@@ -785,7 +787,8 @@ def atualizar_graficos_publicacoes(selected_viz, modo_atual, grupo_selecionado, 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_publicacoes)]
             df_historico = df_historico.dropna(subset=['Ano', 'Metrica', 'Quantidade'])
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_publicacoes]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
@@ -832,7 +835,8 @@ def atualizar_graficos_outros(selected_viz, modo_atual, grupo_selecionado, check
 
             df_historico = df_historico[df_historico['Metrica'].isin(metricas_outros)]
             
-            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=None, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
+            selecionadas = [m for m in metricas if m in metricas_outros]
+            graficos = gerar_histogramas_por_metrica(df_historico, metricas_selecionadas=selecionadas, ano_inicio=anos['inicio'], ano_termino=anos['termino'])
             return graficos
         except Exception as e:
             return [html.Div(f"Erro ao gerar histogramas: {str(e)}")]
